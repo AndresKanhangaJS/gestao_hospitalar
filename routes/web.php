@@ -19,9 +19,15 @@ Route::middleware('auth')->group(function () {
         return view('dashboard.index');
     })->name('dashboard');
 
-    // ACL Routes
-    require __DIR__.'/usuarios.php';
+    // ACL Users
+    require __DIR__.'/config_sistema/usuarios.php';
 
     // ACL Routes
-    require __DIR__.'/acl.php';
+    require __DIR__.'/config_sistema/acl.php';
+
+    // Configurações do Sistema
+    require __DIR__.'/config_sistema/parametrizacao.php';
+
+    // Módulos do Sistema
+    require __DIR__.'/modulos/pacientes.php';
 });

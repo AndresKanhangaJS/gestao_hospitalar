@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
-               © Level - Gestão de Patrimônio 2025 - {{date('Y')}} | Todos os direitos reservados
+               © Level - Gestão Hospitalar | 2025 - {{date('Y')}} | Todos os direitos reservados
             </div>
             <div class="col-sm-6">
                 <div class="text-sm-end d-none d-sm-block">

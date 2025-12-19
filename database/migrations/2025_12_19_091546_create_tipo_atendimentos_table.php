@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tipos_atendimentos', function (Blueprint $table) {
+            $table->id();
+            $table->string('nome');
+            $table->string('codigo')->unique();
+
+            // Rastreabilidade e Estados
+            $table->foreignId('user_id_criacao')->constrained('users');
+            $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
+            $table->enum('status', ['activo', 'inactivo'])->default('activo');
+
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('tipos_atendimentos');
+    }
+};
+
