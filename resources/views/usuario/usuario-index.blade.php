@@ -26,8 +26,11 @@
                     <h5 class="card-title mb-0 flex-grow-1">Usuários</h5>
                     <div class="flex-shrink-0">
                         <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-danger add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Registar</button>
-                            <button class="btn btn-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
+                            @can('usuarios.registar')
+                            <button class="btn btn-danger add-btn" data-bs-toggle="modal" data-bs-target="#showModal">
+                                <i class="ri-add-line align-bottom me-1"></i> Registar
+                            </button>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -76,7 +79,9 @@
                                 <th class="sort" data-sort="project_name">Nome</th>
                                 <th class="sort" data-sort="tasks_name">Email</th>
                                 <th class="sort" data-sort="tasks_name">Status</th>
+                                @can('usuarios.accoes')
                                 <th class="sort" data-sort="priority">Acções</th>
+                                @endcan
                             </tr>
                         </thead>
                         <tbody class="list form-check-all">
@@ -92,28 +97,36 @@
                                         <span class="badge bg-danger">Inactivo</span>
                                     @endif
                                 </td>
+                                @can('usuarios.accoes')
                                 <td>
                                     <div class="hstack gap-3 fs-15">
+                                        @can('usuarios.editar')
                                         <a href="javascript:void(0);"
                                             class="link-primary edit-user"
                                             data-id="{{ $usuario->id }}"
                                             title="Editar">
                                             <i class="ri-edit-box-line"></i>
                                         </a>
+                                        @endcan
+                                        @can('usuarios.detalhes')
                                         <a href="javascript:void(0);"
                                             class="link-info view-user"
                                             data-id="{{ $usuario->id }}"
                                             title="Detalhes">
                                             <i class="ri-eye-line"></i>
                                         </a>
+                                        @endcan
+                                        @can('usuarios.eliminar')
                                         <a href="javascript:void(0);"
                                             class="link-danger delete-user"
                                             data-id="{{ $usuario->id }}"
                                             title="Eliminar">
                                             <i class="ri-delete-bin-5-line"></i>
                                         </a>
+                                        @endcan
                                     </div>
                                 </td>
+                                @endcan
                             </tr>
                             @endforeach
                         </tbody>
@@ -137,6 +150,9 @@
     </div>
     <!--end col-->
 </div>
+
+{{-- Modal de Eliminar Usuário --}}
+@can('usuarios.eliminar')
 <div class="modal fade flip" id="deleteUserModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -172,10 +188,10 @@
         </div>
     </div>
 </div>
+@endcan
 
-
-<!--end delete modal -->
-
+{{-- Modal de Registar Usuário --}}
+@can('usuarios.registar')
 <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0">
@@ -211,7 +227,7 @@
                             />
                         </div>
                     </div>
-
+                    @can('usuarios.atribuir_papeis')
                     <div class="row mt-3">
                         <p>Papeis/Perfis:</p>
 
@@ -232,6 +248,7 @@
                             </div>
                         @endforeach
                     </div>
+                    @endcan
                 </div>
 
                 <div class="modal-footer">
@@ -243,7 +260,10 @@
         </div>
     </div>
 </div>
+@endcan
 
+{{-- Modal de Editar Usuário --}}
+@can('usuarios.editar')
 <div class="modal fade zoomIn" id="editUserModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0">
@@ -277,6 +297,7 @@
                         </div>
                     </div>
 
+                    @can('usuarios.atribuir_papeis')
                     <hr class="my-3">
 
                     <p>Papéis / Perfis:</p>
@@ -297,18 +318,22 @@
                             </div>
                         @endforeach
                     </div>
+                    @endcan
                 </div>
 
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-warning">
-                        Atualizar
+                        Guardar Alterações
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endcan
 
+{{-- Modal de Visualizar Detalhes do Usuário --}}
+@can('usuarios.detalhes')
 <div class="modal fade zoomIn" id="viewUserModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content border-0">
@@ -363,7 +388,7 @@
         </div>
     </div>
 </div>
-
+@endcan
 
 
 

@@ -26,8 +26,10 @@
                     <h5 class="card-title mb-0 flex-grow-1">Papeis</h5>
                     <div class="flex-shrink-0">
                         <div class="d-flex flex-wrap gap-2">
-                            @can('role.create')
-                                <button class="btn btn-danger add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Registar</button>
+                            @can('papel.registar')
+                                <button class="btn btn-danger add-btn" data-bs-toggle="modal" data-bs-target="#showModal">
+                                    <i class="ri-add-line align-bottom me-1"></i> Registar
+                                </button>
                             @endcan
                         </div>
                     </div>
@@ -76,7 +78,7 @@
                                 <th class="sort" data-sort="ordem">#</th>
                                 <th class="sort" data-sort="project_name">Papel</th>
                                 <th class="sort" data-sort="tasks_name">Permissões</th>
-                                @can('role.accoes')
+                                @can('papeis.accoes')
                                     <th>Acções</th>
                                 @endcan
                             </tr>
@@ -93,15 +95,15 @@
                                         @endforeach
                                     @endif
                                 </td>
-                                @can('role.accoes')
+                                @can('papeis.accoes')
                                 <td>
                                     <div class="hstack gap-3 fs-15">
-                                        @can('role.edit')
+                                        @can('papeis.editar')
                                         <a href="javascript:void(0);" class="link-primary edit-role" data-id="{{ $role->id }}">
                                             <i class="ri-edit-box-line"></i>
                                         </a>
                                         @endcan
-                                        @can('role.delete')
+                                        @can('papeis.eliminar')
                                         <a href="javascript:void(0);" class="link-danger delete-role" data-id="{{ $role->id }}">
                                             <i class="ri-delete-bin-5-line"></i>
                                         </a>

@@ -42,24 +42,32 @@
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarApps">
                         <ul class="nav nav-sm flex-column">
+                            @can('acl.menu')
                             <li class="nav-item">
                                 <a href="#sidebarACL" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarACL" data-key="t-calender">
                                     ACL
                                 </a>
                                 <div class="collapse menu-dropdown" id="sidebarACL">
                                     <ul class="nav nav-sm flex-column">
+                                        @can('papeis.menu')
                                         <li class="nav-item">
                                             <a href="{{ route('roles.index') }}" class="nav-link" data-key="t-main-calender"> Papeis </a>
                                         </li>
+                                        @endcan
+                                        @can('permissoes.menu')
                                         <li class="nav-item">
                                             <a href="{{ route('permissions.index') }}" class="nav-link" data-key="t-month-grid"> Permissões </a>
                                         </li>
+                                        @endcan
                                     </ul>
                                 </div>
                             </li>
+                            @endcan
+                            @can('usuarios.menu')
                             <li class="nav-item">
                                 <a href="{{ route('users.index') }}" class="nav-link" data-key="t-users"> Usuários </a>
                             </li>
+                            @endcan
                         </ul>
                     </div>
                 </li>

@@ -14,10 +14,10 @@ class MasterUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'master@gmail.com'],
+        User::create(
             [
                 'name' => 'Master Admin',
+                'email' => 'master@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('Master123!'),
                 'remember_token' => Str::random(10),
