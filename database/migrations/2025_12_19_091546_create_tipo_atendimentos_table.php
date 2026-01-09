@@ -19,7 +19,7 @@ return new class extends Migration
             // Rastreabilidade e Estados
             $table->foreignId('user_id_criacao')->constrained('users');
             $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
-            $table->enum('status', ['activo', 'inactivo'])->default('activo');
+            $table->string('status', 20)->default('activo');
 
             $table->timestamps();
             $table->softDeletes();

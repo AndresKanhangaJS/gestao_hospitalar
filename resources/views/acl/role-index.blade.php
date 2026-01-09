@@ -26,7 +26,7 @@
                     <h5 class="card-title mb-0 flex-grow-1">Papeis</h5>
                     <div class="flex-shrink-0">
                         <div class="d-flex flex-wrap gap-2">
-                            @can('papel.registar')
+                            @can('papeis.registar')
                                 <button class="btn btn-danger add-btn" data-bs-toggle="modal" data-bs-target="#showModal">
                                     <i class="ri-add-line align-bottom me-1"></i> Registar
                                 </button>

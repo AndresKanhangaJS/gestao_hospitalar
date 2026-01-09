@@ -17,6 +17,7 @@ class PermissionSeeder extends Seeder
             "acl.menu",
             //
             "papeis.menu",
+            "papeis.listar",
             "papeis.accoes",
             "papeis.detalhes",
             "papeis.registar",
@@ -25,6 +26,7 @@ class PermissionSeeder extends Seeder
             "papeis.associar_permissoes",
             //
             "permissoes.menu",
+            "permissoes.listar",
             "permissoes.accoes",
             "permissoes.detalhes",
             "permissoes.registar",
@@ -32,12 +34,45 @@ class PermissionSeeder extends Seeder
             "permissoes.eliminar",
             //
             "usuarios.menu",
+            "usuarios.listar",
             "usuarios.accoes",
             "usuarios.detalhes",
             "usuarios.registar",
             "usuarios.editar",
             "usuarios.eliminar",
             "usuarios.atribuir_papeis",
+            //
+            "gestao_pacientes.menu",
+            //
+            "pacientes.menu",
+            "pacientes.listar",
+            "pacientes.accoes",
+            "pacientes.detalhes",
+            "pacientes.registar",
+            "pacientes.editar",
+            "pacientes.eliminar",
+            //
+
+            "gestao_episodios.menu",
+            //
+            "episodios.menu",
+            "episodios.listar",
+            "episodios.accoes",
+            "episodios.detalhes",
+            "episodios.registar",
+            "episodios.editar",
+            "episodios.eliminar",
+            //
+
+            "gestao_medicos.menu",
+            //
+            "medicos.menu",
+            "medicos.listar",
+            "medicos.accoes",
+            "medicos.detalhes",
+            "medicos.registar",
+            "medicos.editar",
+            "medicos.eliminar",
         ];
 
         foreach($permissions as $key => $value){

@@ -26,9 +26,7 @@
 
     <div id="scrollbar">
         <div class="container-fluid">
-
-            <div id="two-column-menu">
-            </div>
+            <div id="two-column-menu"></div>
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
                 <li class="nav-item">
@@ -37,10 +35,10 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarApps">
+                    <a class="nav-link menu-link" href="#sidebarConfigs" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarConfigs">
                         <i class="ri-settings-5-line"></i> <span data-key="t-apps">Configurações</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarApps">
+                    <div class="collapse menu-dropdown" id="sidebarConfigs">
                         <ul class="nav nav-sm flex-column">
                             @can('acl.menu')
                             <li class="nav-item">
@@ -71,6 +69,70 @@
                         </ul>
                     </div>
                 </li>
+                @can('gestao_pacientes.menu')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarGestPacientes" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarGestPacientes">
+                        <i class="ri-user-heart-line"></i> <span data-key="t-apps">Pacientes</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarGestPacientes">
+                        <ul class="nav nav-sm flex-column">
+                            @can('pacientes.menu')
+                            <li class="nav-item">
+                                <a href="#sidebarPacientes" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPacientes" data-key="t-calender">
+                                    Pacientes
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarPacientes">
+                                    <ul class="nav nav-sm flex-column">
+                                        @can('pacientes.registar')
+                                        <li class="nav-item">
+                                            <a href="{{ route('pacientes.create') }}" class="nav-link"> Registar </a>
+                                        </li>
+                                        @endcan
+                                        @can('pacientes.listar')
+                                        <li class="nav-item">
+                                            <a href="{{ route('pacientes.index') }}" class="nav-link"> Listar </a>
+                                        </li>
+                                        @endcan
+                                    </ul>
+                                </div>
+                            </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+                @endcan
+                @can('gestao_medicos.menu')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarGestMedicos" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarGestMedicos">
+                        <i class="ri-stethoscope-line"></i> <span data-key="t-apps">Médicos</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarGestMedicos">
+                        <ul class="nav nav-sm flex-column">
+                            @can('medicos.menu')
+                            <li class="nav-item">
+                                <a href="#sidebarMedicos" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarMedicos" data-key="t-calender">
+                                    Médicos
+                                </a>
+                                <div class="collapse menu-dropdown" id="sidebarMedicos">
+                                    <ul class="nav nav-sm flex-column">
+                                        @can('medicos.registar')
+                                        <li class="nav-item">
+                                            <a href="{{ route('medicos.create') }}" class="nav-link"> Registar </a>
+                                        </li>
+                                        @endcan
+                                        @can('medicos.listar')
+                                        <li class="nav-item">
+                                            <a href="{{ route('medicos.index') }}" class="nav-link"> Listar </a>
+                                        </li>
+                                        @endcan
+                                    </ul>
+                                </div>
+                            </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+                @endcan
             </ul>
         </div>
         <!-- Sidebar -->

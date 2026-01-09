@@ -30,4 +30,5 @@ Route::middleware('auth')->group(function () {
 
     // Módulos do Sistema
     require __DIR__.'/modulos/pacientes.php';
+    require __DIR__.'/modulos/medicos.php';
 });

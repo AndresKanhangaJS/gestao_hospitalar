@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pacientes', function (Blueprint $table) {
+        Schema::create('medicos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nome_completo');
             $table->date('data_nascimento');
             $table->string('genero');
@@ -23,8 +24,10 @@ return new class extends Migration
             $table->string('telefone', 20)->nullable();
             $table->string('email')->nullable();
             $table->text('morada')->nullable();
-            $table->string('grupo_sanguineo', 5)->nullable();
-            $table->text('alergias')->nullable();
+
+            // Dados Profissionais Específicos
+            $table->string('numero_ordem', 30)->unique();
+            $table->string('especialidade')->nullable();
 
             $table->foreignId('user_id_criacao')->constrained('users');
             $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
@@ -34,8 +37,6 @@ return new class extends Migration
             $table->string('status', 20)->default('activo');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->unique(['tipo_documento', 'numero_documento']);
         });
     }
 
@@ -44,6 +45,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pacientes');
+        Schema::dropIfExists('medicos');
     }
 };

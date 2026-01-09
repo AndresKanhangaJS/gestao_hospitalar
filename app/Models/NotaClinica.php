@@ -15,9 +15,15 @@ class NotaClinica extends Model
     protected $fillable = [
         'episodio_id', 'user_id_criacao', 'user_id_atualizacao',
         'queixa_principal', 'historia_doenca', 'exame_fisico',
-        'diagnostico_hipotese', 'plano_tratamento', 'status', 'situacao'
+        'diagnostico_hipotese', 'plano_tratamento', 'status', 'situacao',
+        'motivo_exclusao', 'user_id_delete', 'user_id_atualizacao'
     ];
 
+    public function criador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id_criacao');
+    }
+    
     public function episodio(): BelongsTo
     {
         return $this->belongsTo(Episodio::class, 'episodio_id');

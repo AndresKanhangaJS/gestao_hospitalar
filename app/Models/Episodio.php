@@ -25,6 +25,12 @@ class Episodio extends Model
     ];
 
     // Relacionamentos
+
+    public function criador()
+    {
+        return $this->belongsTo(User::class, 'user_id_criacao');
+    }
+    
     public function paciente(): BelongsTo
     {
         return $this->belongsTo(Paciente::class, 'paciente_id');
@@ -32,7 +38,7 @@ class Episodio extends Model
 
     public function medico(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'medico_id');
+        return $this->belongsTo(Medico::class, 'medico_id');
     }
 
     public function tipoAtendimento(): BelongsTo

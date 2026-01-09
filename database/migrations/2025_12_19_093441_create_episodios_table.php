@@ -17,15 +17,17 @@ return new class extends Migration
             $table->foreignId('medico_id')->constrained('users');
             $table->foreignId('tipo_atendimento_id')->constrained('tipos_atendimentos');
 
-            $table->foreignId('user_id_criacao')->constrained('users');
-            $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
-
             $table->string('codigo_atendimento')->unique();
             $table->dateTime('data_abertura');
             $table->dateTime('data_fecho')->nullable();
 
-            $table->enum('status', ['activo', 'inactivo'])->default('activo');
-            $table->enum('situacao', ['Aberto', 'Em Espera', 'Concluido', 'Cancelado'])->default('Aberto')->nullable();
+            $table->foreignId('user_id_criacao')->constrained('users');
+            $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
+            $table->foreignId('user_id_delete')->nullable()->constrained('users')->onDelete('set null');
+            $table->text('motivo_exclusao')->nullable();
+            
+            $table->string('status', 20)->default('activo');
+            $table->string('situacao')->default('Aberto')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

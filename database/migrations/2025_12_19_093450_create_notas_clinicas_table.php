@@ -14,8 +14,6 @@ return new class extends Migration
         Schema::create('notas_clinicas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('episodio_id')->constrained('episodios')->onDelete('cascade');
-            $table->foreignId('user_id_criacao')->constrained('users');
-            $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
 
             $table->mediumText('queixa_principal');
             $table->mediumText('historia_doenca');
@@ -23,8 +21,14 @@ return new class extends Migration
             $table->mediumText('diagnostico_hipotese');
             $table->mediumText('plano_tratamento')->nullable();
 
-            $table->enum('status', ['activo', 'inactivo'])->default('activo');
-            $table->enum('situacao', ['Rascunho', 'Finalizado', 'Rectificado'])->default('Finalizado')->nullable();
+
+            $table->foreignId('user_id_criacao')->constrained('users');
+            $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
+            $table->foreignId('user_id_delete')->nullable()->constrained('users')->onDelete('set null');
+            $table->text('motivo_exclusao')->nullable();
+            
+            $table->string('status', 20)->default('activo');
+            $table->string('situacao')->default('Finalizado')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
