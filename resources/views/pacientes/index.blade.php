@@ -140,19 +140,19 @@
                                 <td>
                                     <div class="hstack gap-2 justify-content-center">
                                         @can('pacientes.detalhes')
-                                        <a href="{{ route('pacientes.show', $paciente->id) }}" class="btn btn-sm btn-soft-info" title="Ver Ficha">
+                                        <a href="{{ route('pacientes.show', $paciente) }}" class="btn btn-sm btn-soft-info" title="Ver Ficha">
                                             <i class="ri-eye-fill"></i>
                                         </a>
                                         @endcan
 
                                         @can('pacientes.editar')
-                                        <a href="{{ route('pacientes.edit', $paciente->id) }}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                        <a href="{{ route('pacientes.edit', $paciente) }}" class="btn btn-sm btn-soft-primary" title="Editar">
                                             <i class="ri-pencil-fill"></i>
                                         </a>
                                         @endcan
 
                                         @can('episodios.registar')
-                                        <a href="{{ route('episodios.create', $paciente->id) }}" class="btn btn-soft-success btn-sm" title="Abrir Atendimento">
+                                        <a href="{{ route('episodios.create', $paciente) }}" class="btn btn-soft-success btn-sm" title="Abrir Atendimento">
                                             <i class="ri-add-circle-line"></i>
                                         </a>
                                         @endcan

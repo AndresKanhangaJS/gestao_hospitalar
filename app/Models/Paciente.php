@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Hashids\Hashids;
+use App\Traits\HasHashId;
 
 class Paciente extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes; use HasHashId;
 
     protected $table = 'pacientes';
 
