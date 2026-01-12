@@ -143,7 +143,7 @@ class MedicoController extends Controller
             return response()->json([
                 'status'  => 'success',
                 'message' => 'Os dados do médico foram atualizados com sucesso!',
-                'id'      => $medico->id
+                'id'      => codificar($medico->id)
             ], 200);
 
         } catch (\Exception $e) {
@@ -152,5 +152,36 @@ class MedicoController extends Controller
                 'message' => 'Erro ao processar atualização: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        // 1. Validação
+        $request->validate([
+            'motivo' => 'required|string|min:10'
+        ],
+        [
+            // Mensagens customizadas
+            'min' => 'O campo :attribute deve ter no mínimo :min caracteres.',
+            'required' => 'O campo :attribute é obrigatório.'
+        ]);
+
+        // 2. Localização do registro
+        $medico = Medico::findOrFail(decodificar($id));
+
+        // 3. Atualização dos dados de auditoria ANTES do soft delete
+        $medico->update([
+            'motivo_exclusao' => $request->motivo,
+            'status' => 'eliminado',
+            'user_id_delete'  => auth()->id() // Captura o ID do utilizador logado
+        ]);
+
+        // 4. Execução do Soft Delete
+        $medico->delete();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Médico removido com sucesso.'
+        ]);
     }
 }

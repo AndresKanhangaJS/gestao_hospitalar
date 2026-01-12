@@ -28,20 +28,44 @@
             </div>
 
             <div class="card-body border border-dashed border-end-0 border-start-0 bg-light-subtle">
-                <form action="{{ route('episodios.index') }}" method="GET">
-                    <div class="row g-2">
-                        <div class="col-xxl-3 col-sm-6">
+                <form action="{{ route('episodios.index') }}" method="GET" id="filter-form">
+                    <div class="row g-3">
+                        <div class="col-xxl-4 col-sm-12">
                             <div class="search-box">
                                 <input type="text" name="search" value="{{ request('search') }}"
                                     class="form-control search bg-white border-light"
-                                    placeholder="Nome do paciente ou documento...">
+                                    placeholder="Paciente, BI ou Cód. Atendimento...">
                                 <i class="ri-search-line search-icon"></i>
                             </div>
                         </div>
 
-                        <div class="col-xxl-2 col-sm-3">
+                        <div class="col-xxl-2 col-sm-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-light text-muted">De:</span>
+                                <input type="date" name="data_inicio" value="{{ request('data_inicio') }}"
+                                    class="form-control bg-white border-light">
+                            </div>
+                        </div>
+
+                        <div class="col-xxl-2 col-sm-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-light text-muted">Até:</span>
+                                <input type="date" name="data_fim" value="{{ request('data_fim') }}"
+                                    class="form-control bg-white border-light">
+                            </div>
+                        </div>
+
+                        <div class="col-xxl-2 col-sm-6">
+                            <select class="form-select bg-white border-light" name="situacao">
+                                <option value="">Situação (Todas)</option>
+                                <option value="Aberto" {{ request('situacao') == 'Aberto' ? 'selected' : '' }}>🟢 Aberto</option>
+                                <option value="Fechado" {{ request('situacao') == 'Fechado' ? 'selected' : '' }}>🔴 Fechado</option>
+                            </select>
+                        </div>
+
+                        <div class="col-xxl-2 col-sm-6">
                             <select class="form-select bg-white border-light" name="tipo_id">
-                                <option value="">Tipo (Todos)</option>
+                                <option value="">Tipo Atendimento</option>
                                 @foreach($tiposAtendimento as $tipo)
                                     <option value="{{ $tipo->id }}" {{ request('tipo_id') == $tipo->id ? 'selected' : '' }}>
                                         {{ $tipo->nome }}
@@ -50,30 +74,30 @@
                             </select>
                         </div>
 
-                        <div class="col-xxl-2 col-sm-3">
+                        <div class="col-xxl-4 col-sm-6">
                             <select class="form-select bg-white border-light" name="medico_id">
                                 <option value="">Médico Responsável</option>
                                 @foreach($medicos as $medico)
                                     <option value="{{ $medico->id }}" {{ request('medico_id') == $medico->id ? 'selected' : '' }}>
-                                        Dr(a). {{ $medico->name }}
+                                        {{ $medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $medico->nome_completo }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <div class="col-xxl-2 col-sm-4">
+                        <div class="col-xxl-2 col-sm-6">
                             <select class="form-select bg-white border-light" name="status">
-                                <option value="">Status (Todos)</option>
-                                <option value="activo" {{ request('status') == 'activo' ? 'selected' : '' }}>Activos</option>
-                                <option value="inactivo" {{ request('status') == 'inactivo' ? 'selected' : '' }}>Inactivos</option>
+                                <option value="">Status Registro</option>
+                                <option value="activo" {{ request('status') == 'activo' ? 'selected' : '' }}>Activo</option>
+                                <option value="inactivo" {{ request('status') == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
                             </select>
                         </div>
 
-                        <div class="col-xxl-3 col-sm-8 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary w-100 shadow-sm">
-                                <i class="ri-equalizer-fill me-1 align-bottom"></i> Filtrar
+                        <div class="col-xxl-6 col-sm-12 d-flex gap-2 justify-content-end align-items-end">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm flex-grow-1 flex-md-grow-0">
+                                <i class="ri-equalizer-fill me-1 align-bottom"></i>Filtrar
                             </button>
-                            <a href="{{ route('episodios.index') }}" class="btn btn-soft-danger w-50 shadow-sm" title="Limpar Filtros">
+                            <a href="{{ route('episodios.index') }}" class="btn btn-soft-danger px-4 shadow-sm" title="Limpar Tudo">
                                 <i class="ri-refresh-line"></i>
                             </a>
                         </div>
@@ -126,7 +150,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <i class="ri-user-star-line me-1 text-muted fs-16"></i>
-                                        <span class="text-muted fw-medium">Dr. {{ $episodio->medico->name ?? 'Não Atribuído' }}</span>
+                                        <span class="text-muted fw-medium">{{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo ?? 'Não Atribuído' }}</span>
                                     </div>
                                 </td>
                                 <td>
@@ -136,12 +160,12 @@
                                 </td>
                                 <td>
                                     <div class="hstack gap-2 justify-content-center">
-                                        <a href="{{ route('episodios.show', $episodio->id) }}" class="btn btn-sm btn-soft-info" title="Ver detalhes">
+                                        <a href="{{ route('episodios.show', $episodio) }}" class="btn btn-sm btn-soft-info" title="Ver detalhes">
                                             <i class="ri-eye-fill"></i>
                                         </a>
-                                        <a href="" class="btn btn-sm btn-soft-primary" title="Editar">
+                                        {{-- <a href="" class="btn btn-sm btn-soft-primary" title="Editar">
                                             <i class="ri-pencil-fill"></i>
-                                        </a>
+                                        </a> --}}
                                     </div>
                                 </td>
                             </tr>

@@ -24,7 +24,7 @@
                 <div class="d-flex align-items-center">
                     <h5 class="card-title mb-0 flex-grow-1 fw-bold text-primary">Editar Médico: {{ $medico->nome_completo }}</h5>
                     <div class="flex-shrink-0 hstack gap-2">
-                        <a href="{{ route('medicos.show', $medico->id) }}" class="btn btn-info btn-sm shadow-sm">
+                        <a href="{{ route('medicos.show', $medico) }}" class="btn btn-info btn-sm shadow-sm">
                             <i class="ri-eye-line me-1 align-bottom"></i> Ver Detalhes
                         </a>
                         <a href="{{ route('medicos.index') }}" class="btn btn-white btn-sm shadow-sm border-light text-primary">
@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <form id="form-medico-edit" action="{{ route('medicos.update', $medico->id) }}" method="POST">
+            <form id="form-medico-edit" action="{{ route('medicos.update', $medico) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="card-body p-4">

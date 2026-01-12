@@ -14,7 +14,7 @@
                     <i class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i> Voltar
                 </a>
                 @can('pacientes.editar')
-                <a href="{{ route('pacientes.edit', $paciente->id) }}" class="btn btn-primary btn-label shadow-sm">
+                <a href="{{ route('pacientes.edit', $paciente) }}" class="btn btn-primary btn-label shadow-sm">
                     <i class="ri-pencil-fill label-icon align-middle fs-16 me-2"></i> Editar Dados
                 </a>
                 @endcan

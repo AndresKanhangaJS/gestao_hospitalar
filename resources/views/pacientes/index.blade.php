@@ -159,7 +159,7 @@
 
                                         @can('pacientes.eliminar')
                                         <button type="button"
-                                                data-url="{{ route('pacientes.destroy', $paciente->id) }}"
+                                                data-url="{{ route('pacientes.destroy', $paciente) }}"
                                                 class="btn btn-sm btn-soft-danger btn-delete-paciente" title="Eliminar">
                                             <i class="ri-delete-bin-5-line"></i>
                                         </button>

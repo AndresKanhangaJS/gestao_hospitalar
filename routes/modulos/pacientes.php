@@ -13,7 +13,7 @@ Route::prefix('pacientes')->group(function () {
     Route::get('/{paciente}/editar', [PacienteController::class, 'edit'])->name('pacientes.edit');
     Route::get('/{paciente}/detalhes', [PacienteController::class, 'show'])->name('pacientes.show');
     Route::put('/{paciente}/actualizar', [PacienteController::class, 'update'])->name('pacientes.update');
-    Route::delete('/{id}', [PacienteController::class, 'destroy'])->name('pacientes.destroy');
+    Route::delete('/{paciente}', [PacienteController::class, 'destroy'])->name('pacientes.destroy');
 });
 // Episódios (Atendimentos)
 Route::prefix('episodios')->group(function () {
@@ -22,6 +22,7 @@ Route::prefix('episodios')->group(function () {
     Route::post('/store', [EpisodioController::class, 'store'])->name('episodios.store');
     Route::get('/{episodio}/detalhes', [EpisodioController::class, 'show'])->name('episodios.show');
     Route::delete('/{episodio}/eliminar', [EpisodioController::class, 'destroy'])->name('episodios.destroy');
+    Route::put('/{episodio}/finalizar', [EpisodioController::class, 'finalizar'])->name('episodios.finalizar');
 });
 
 // Notas Clínicas (Prontuário)

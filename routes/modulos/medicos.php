@@ -10,5 +10,5 @@ Route::prefix('medicos')->group(function () {
     Route::get('/{medico}/editar', [MedicoController::class, 'edit'])->name('medicos.edit');
     Route::get('/{medico}/detalhes', [MedicoController::class, 'show'])->name('medicos.show');
     Route::put('/{medico}/actualizar', [MedicoController::class, 'update'])->name('medicos.update');
-    Route::delete('/{id}', [MedicoController::class, 'destroy'])->name('medicos.destroy');
+    Route::delete('/{medico}', [MedicoController::class, 'destroy'])->name('medicos.destroy');
 });

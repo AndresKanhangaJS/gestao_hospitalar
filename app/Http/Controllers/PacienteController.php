@@ -147,7 +147,7 @@ class PacienteController extends Controller
             return response()->json([
                 'status'  => 'success',
                 'message' => 'Os dados do paciente foram atualizados com sucesso!',
-                'id'      => $paciente->id
+                'id'      => codificar($paciente->id)
             ], 200);
 
         } catch (\Exception $e) {
@@ -171,7 +171,7 @@ class PacienteController extends Controller
         ]);
 
         // 2. Localização do registro
-        $paciente = Paciente::findOrFail($id);
+        $paciente = Paciente::findOrFail(decodificar($id));
 
         // 3. Atualização dos dados de auditoria ANTES do soft delete
         $paciente->update([

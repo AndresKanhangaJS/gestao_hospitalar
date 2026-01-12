@@ -121,20 +121,19 @@
                                 <td>
                                     <div class="hstack gap-2 justify-content-center">
                                         @can('medicos.detalhes')
-                                        <a href="{{ route('medicos.show', $medico->id) }}" class="btn btn-sm btn-soft-info" title="Ver Perfil">
+                                        <a href="{{ route('medicos.show', $medico) }}" class="btn btn-sm btn-soft-info" title="Ver Perfil">
                                             <i class="ri-eye-fill"></i>
                                         </a>
                                         @endcan
 
                                         @can('medicos.editar')
-                                        <a href="{{ route('medicos.edit', $medico->id) }}" class="btn btn-sm btn-soft-primary" title="Editar">
+                                        <a href="{{ route('medicos.edit', $medico) }}" class="btn btn-sm btn-soft-primary" title="Editar">
                                             <i class="ri-pencil-fill"></i>
                                         </a>
                                         @endcan
 
                                         @can('medicos.eliminar')
-                                        <button type="button" data-url="{{ route('medicos.destroy', $medico->id) }}"
-                                                class="btn btn-sm btn-soft-danger btn-delete-medico" title="Eliminar">
+                                        <button type="button" data-url="{{ route('medicos.destroy', $medico) }}" class="btn btn-sm btn-soft-danger btn-delete-medico" title="Eliminar">
                                             <i class="ri-delete-bin-5-line"></i>
                                         </button>
                                         @endcan
@@ -163,6 +162,48 @@
 
 @endsection
 
+{{-- Modal de Eliminar --}}
+@can('medicos.eliminar')
+<div class="modal fade flip" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger-subtle p-3">
+                <h5 class="modal-title text-danger"><i class="ri-error-warning-line me-1"></i> Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-body p-4 text-center">
+                    <lord-icon
+                        src="https://cdn.lordicon.com/gsqxdxog.json"
+                        trigger="loop"
+                        colors="primary:#405189,secondary:#f06548"
+                        style="width:90px;height:90px">
+                    </lord-icon>
+
+                    <div class="mt-4">
+                        <h4 class="fw-bold">Atenção!</h4>
+                        <p class="text-muted fs-15">Você está prestes a remover permanentemente o medico: <br><b id="medicoNome" class="text-dark"></b>.</p>
+
+                        <div class="mb-3 text-start mt-4">
+                            <label for="motivo" class="form-label fw-bold">Motivo da Exclusão <span class="text-danger">*</span></label>
+                            <textarea class="form-control bg-light border-light" name="motivo" id="motivo" rows="3" required placeholder="Informe o motivo obrigatório..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-light fw-medium" data-bs-dismiss="modal">Manter Registo</button>
+                    <button type="submit" class="btn btn-danger btn-label">
+                        <i class="ri-delete-bin-line label-icon align-middle fs-16 me-2"></i> Confirmar e Excluir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endcan
+
 @push('scripts')
 <script>
     // Lógica JS idêntica a do paciente, apenas trocando a classe do botão
@@ -175,6 +216,57 @@
         $('#medicoNome').text(nome); // Mude o ID no modal para medicoNome
         $('#deleteModal').modal('show');
     });
-    // ... manter o resto do AJAX igual ao de pacientes
+    $('#deleteForm').on('submit', function(e) {
+        e.preventDefault();
+        let form = $(this);
+        let btnSubmit = form.find('button[type="submit"]');
+
+        // Feedback visual no botão do modal
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> A eliminar...');
+
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: form.serialize(),
+            dataType: 'json',
+            success: function(response) {
+                $('#deleteModal').modal('hide');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Eliminado!',
+                    text: response.message || 'O registo foi removido com sucesso.',
+                    confirmButtonText: 'Concluído',
+                    confirmButtonColor: '#0ab39c', // Verde do seu padrão
+                    allowOutsideClick: false
+                }).then(() => {
+                    location.reload(); // Recarrega a tabela para reflectir a exclusão
+                });
+            },
+            error: function(xhr) {
+                // Reabilita o botão em caso de erro
+                btnSubmit.prop('disabled', false).html('<i class="ri-delete-bin-line label-icon align-middle fs-16 me-2"></i> Confirmar e Excluir');
+
+                if (xhr.status === 422) {
+                    let errors = xhr.responseJSON.errors;
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atenção',
+                        text: errors.motivo ? errors.motivo[0] : 'O motivo é obrigatório para excluir.',
+                        confirmButtonText: 'Tentar Novamente',
+                        confirmButtonColor: '#f7b84b' // Cor de aviso (Amarelo/Laranja)
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: 'Não foi possível eliminar o registo. Tente novamente.',
+                        confirmButtonText: 'Fechar',
+                        confirmButtonColor: '#f06548' // Vermelho
+                    });
+                }
+            }
+        });
+    });
 </script>
 @endpush

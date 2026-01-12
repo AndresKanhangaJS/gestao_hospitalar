@@ -75,7 +75,7 @@
                                 <select class="form-select border-light bg-light" name="medico_id" id="medico_id" required>
                                     <option value="" selected disabled>Selecione o médico...</option>
                                     @foreach($medicos as $medico)
-                                        <option value="{{ $medico->id }}">Dr. {{ $medico->name }}</option>
+                                        <option value="{{ $medico->id }}">{{ $medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $medico->nome_completo }}</option>
                                     @endforeach
                                 </select>
                             </div>
