@@ -35,6 +35,7 @@
                     </div>
                 </div>
                 <h5 class="mb-1 fw-bold text-dark">{{ $medico->nome_completo }}</h5>
+                <span class="badge bg-secondary fs-11 align-middle ms-1">#{{ $medico->codigo_medico }}</span>
                 <p class="text-primary fw-medium mb-1">{{ $medico->especialidade ?? 'Clínico Geral' }}</p>
                 <p class="text-muted fs-12 mb-3">Nº de Ordem: <span class="fw-bold">{{ $medico->numero_ordem }}</span></p>
 

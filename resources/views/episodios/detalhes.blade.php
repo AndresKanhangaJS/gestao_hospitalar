@@ -3,6 +3,11 @@
 @section('title', 'Atendimento: ' . $episodio->codigo_atendimento)
 
 @section('content')
+@php
+    $isMedicoResponsavel = (auth()->user()->hasRole('Médico') && auth()->user()->medico && auth()->user()->medico->id == $episodio->medico_id);
+    $podeEditar = ($episodio->situacao == 'Aberto' && $isMedicoResponsavel);
+@endphp
+
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between shadow-sm p-3 bg-white rounded border-start border-primary border-3">
@@ -14,10 +19,16 @@
                     <i class="ri-arrow-left-line label-icon align-middle fs-16 me-2"></i> Voltar
                 </a>
 
-                @if($episodio->situacao == 'Aberto')
-                <button type="button" class="btn btn-danger btn-label shadow-sm" onclick="finalizarAtendimento()">
-                    <i class="ri-door-lock-line label-icon align-middle fs-16 me-2"></i> Finalizar Atendimento
-                </button>
+                @if($podeEditar)
+                    <button type="button" class="btn btn-primary btn-label shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRequisitarExame">
+                        <i class="ri-flask-line label-icon align-middle fs-16 me-2"></i> Requisitar Exames
+                    </button>
+                    <button type="button" class="btn btn-info btn-label shadow-sm" data-bs-toggle="modal" data-bs-target="#modalReceita">
+                        <i class="ri-file-list-3-line label-icon align-middle fs-16 me-2"></i> Emitir Receita
+                    </button>
+                    <button type="button" class="btn btn-danger btn-label shadow-sm" onclick="finalizarAtendimento()">
+                        <i class="ri-door-lock-line label-icon align-middle fs-16 me-2"></i> Finalizar Atendimento
+                    </button>
                 @endif
             </div>
         </div>
@@ -49,16 +60,86 @@
                 </a>
             </div>
             <div class="card-footer py-3 bg-light-subtle border-top-0">
-                <div class="row text-center">
-                    <div class="col-6 border-end text-truncate">
-                        <p class="text-muted mb-1 fs-11 text-uppercase">Idade</p>
-                        <h6 class="mb-0 fw-bold fs-13">{{ $episodio->paciente->data_nascimento->age }} anos</h6>
+                <div class="row justify-content-center text-center">
+                    <div class="col-6 border-end">
+                        <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Idade Atual</p>
+                        <h6 class="mb-0 fw-bold text-dark">{{ $episodio->paciente->data_nascimento->age }} Anos</h6>
                     </div>
-                    <div class="col-6 text-truncate">
-                        <p class="text-muted mb-1 fs-11 text-uppercase">G. Sanguíneo</p>
-                        <h6 class="mb-0 fw-bold text-danger fs-13">
-                            <i class="ri-drop-fill"></i> {{ $episodio->paciente->grupo_sanguineo ?? 'N/D' }}
+                    @can('pacientes.informacoes_medicas')
+                    <div class="col-6">
+                        <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">G. Sanguíneo</p>
+                        <h6 class="mb-0 fw-bold text-danger">
+                            <i class="ri-drop-fill me-1"></i>{{ $episodio->paciente->grupo_sanguineo ?? 'N/D' }}
                         </h6>
+                    </div>
+                    @endcan
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-header bg-light-subtle d-flex align-items-center justify-content-between">
+                <h6 class="card-title mb-0 fw-bold"><i class="ri-pulse-line me-2 text-danger"></i>Sinais Vitais</h6>
+                <span class="badge bg-primary-subtle text-primary">Triagem</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 border-bottom pb-2">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Pressão Arterial</label>
+                        <div class="d-flex align-items-center">
+                            <i class="ri-heart-3-fill text-danger me-2 fs-18"></i>
+                            <span class="fw-bold text-dark fs-15">
+                                {{ $episodio->pa_sistolica ?? '--' }} / {{ $episodio->pa_diastolica ?? '--' }}
+                                <small class="text-muted fw-normal">mmHg</small>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-6 border-end">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Temperatura</label>
+                        <div class="d-flex align-items-center">
+                            <i class="ri-temp-hot-line text-warning me-2 fs-18"></i>
+                            <span class="fw-bold text-dark">{{ $episodio->temperatura ?? '--' }}°C</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Frequência</label>
+                        <div class="d-flex align-items-center">
+                            <i class="ri-rest-time-line text-info me-2 fs-18"></i>
+                            <span class="fw-bold text-dark">{{ $episodio->frequencia_cardiaca ?? '--' }} <small>BPM</small></span>
+                        </div>
+                    </div>
+
+                    <div class="col-6 border-end border-top pt-2">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Peso</label>
+                        <span class="fw-bold text-dark">{{ $episodio->peso ?? '--' }} kg</span>
+                    </div>
+                    <div class="col-6 border-top pt-2">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Altura</label>
+                        <span class="fw-bold text-dark">{{ $episodio->altura ?? '--' }} m</span>
+                    </div>
+
+                    <div class="col-12 border-top pt-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Saturação (SpO2)</label>
+                                <span class="badge {{ ($episodio->saturacao < 95 && $episodio->saturacao != null) ? 'bg-danger' : 'bg-info' }} fs-12">
+                                    {{ $episodio->saturacao ?? '--' }}%
+                                </span>
+                            </div>
+                            <div class="text-end">
+                                <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">IMC</label>
+                                @if($episodio->peso && $episodio->altura)
+                                    @php
+                                        $imc = $episodio->peso / ($episodio->altura * $episodio->altura);
+                                        $corImc = $imc > 25 ? 'text-danger' : ($imc < 18.5 ? 'text-warning' : 'text-success');
+                                    @endphp
+                                    <span class="fw-bold {{ $corImc }}">{{ number_format($imc, 1) }}</span>
+                                @else
+                                    <span class="text-muted">--</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -125,13 +206,14 @@
         </div>
         @endif
 
+        {{-- Card da Linha do Tempo de Evoluções --}}
         <div class="card shadow-sm border-0">
             <div class="card-header bg-light d-flex align-items-center py-2 px-3">
                 <div class="flex-grow-1">
                     <span class="badge bg-primary-subtle text-primary text-uppercase">Linha do Tempo de Evolução</span>
                 </div>
                 <div class="flex-shrink-0">
-                    @if($episodio->situacao == 'Aberto')
+                    @if($podeEditar)
                         <button type="button" class="btn btn-primary btn-sm btn-label shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNotaClinica">
                             <i class="ri-add-line label-icon align-middle fs-16 me-2"></i> Nova Evolução
                         </button>
@@ -155,7 +237,7 @@
                                             <span class="badge bg-primary-subtle text-primary text-uppercase">Nota Médica</span>
                                         </div>
                                         <div class="flex-shrink-0 d-flex align-items-center gap-2">
-                                            @if($episodio->situacao == 'Aberto')
+                                            @if($podeEditar && $nota->user_id == auth()->id())
                                                 <button type="button" class="btn btn-sm btn-soft-info" onclick="abrirModalEdicao({{ json_encode($nota) }})">
                                                     <i class="ri-edit-2-line"></i>
                                                 </button>
@@ -202,7 +284,7 @@
                     {{-- MENSAGEM QUANDO NÃO HÁ NOTAS --}}
                     <div class="text-center py-5">
                         <h5 class="mt-4 fw-bold text-muted">Ainda não existem evoluções médicas para este episódio.</h5>
-                        @if($episodio->situacao == 'Aberto')
+                        @if($podeEditar)
                             <button type="button" class="btn btn-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#modalNotaClinica">
                                 <i class="ri-add-line align-middle me-1"></i> Adicionar Nota Inicial
                             </button>
@@ -212,11 +294,137 @@
                 </div>
             </div>
         </div>
+
+        {{-- Card de Exames Requisitados --}}
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-header bg-light d-flex align-items-center py-2 px-3">
+                <h6 class="card-title mb-0 flex-grow-1 fw-bold text-primary">
+                    <i class="ri-flask-line me-2"></i>Exames Requisitados neste Episódio
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="fs-12">
+                                <th>Código REQ</th>
+                                <th>Prioridade</th>
+                                <th>Status</th>
+                                <th>Exames Selecionados</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($episodio->requisicoesExames->sortByDesc('created_at') as $requisicao)
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark">{{ $requisicao->codigo_requisicao }}</span>
+                                    <div class="text-muted fs-11">{{ $requisicao->created_at->format('d/m/Y H:i') }}</div>
+                                </td>
+                                <td>
+                                    @if($requisicao->prioridade == 'urgente')
+                                        <span class="badge bg-danger">URGENTE (STAT)</span>
+                                    @else
+                                        <span class="badge bg-info">Rotina</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        $statusClass = [
+                                            'pendente' => 'bg-warning-subtle text-warning',
+                                            'em_coleta' => 'bg-info-subtle text-info',
+                                            'laboratorio' => 'bg-primary-subtle text-primary',
+                                            'concluido' => 'bg-success-subtle text-success',
+                                            'cancelado' => 'bg-danger-subtle text-danger'
+                                        ][$requisicao->status] ?? 'bg-light text-muted';
+                                    @endphp
+                                    <span class="badge {{ $statusClass }} text-uppercase">
+                                        {{ str_replace('_', ' ', $requisicao->status) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($requisicao->itens as $item)
+                                            <span class="badge border border-light-subtle text-muted fw-normal">
+                                                {{ $item->exame->nome }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown">
+                                            <i class="ri-more-fill"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#"><i class="ri-printer-line me-2 align-bottom text-muted"></i> Imprimir Guia</a></li>
+                                            @if($requisicao->status == 'concluido')
+                                                <li><a class="dropdown-item" href="#"><i class="ri-file-list-3-line me-2 align-bottom text-muted"></i> Ver Resultados</a></li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">Nenhuma requisição de exame enviada.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Card de Receitas Emitidas --}}
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-header bg-light d-flex align-items-center py-2 px-3">
+                <h6 class="card-title mb-0 flex-grow-1 fw-bold text-info">
+                    <i class="ri-file-paper-2-line me-2"></i>Receitas Emitidas neste Episódio
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="fs-12">
+                                <th>Código</th>
+                                <th>Data/Hora</th>
+                                <th>Medicamentos</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($episodio->receitas->sortByDesc('created_at') as $receita)
+                            <tr>
+                                <td class="fw-bold text-primary">{{ $receita->codigo_receita }}</td>
+                                <td>{{ $receita->created_at->format('d/m/Y H:i') }}</td>
+                                <td>
+                                    <span class="badge bg-info-subtle text-info">
+                                        {{ $receita->itens->count() }} item(ns)
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ route('receitas.imprimir', codificar($receita->id)) }}" target="_blank" class="btn btn-sm btn-soft-dark">
+                                        <i class="ri-printer-line me-1"></i> Imprimir
+                                    </a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-muted">Nenhuma receita emitida.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 {{-- MODAIS --}}
-
+@if ($podeEditar)
 {{-- Modal Novo Registro --}}
 <div class="modal fade" id="modalNotaClinica" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -338,6 +546,172 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Receita --}}
+<div class="modal fade" id="modalReceita" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-info py-3">
+                <h5 class="modal-title text-white fw-bold"><i class="ri-capsule-line me-2"></i>Prescrever Medicamentos</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-receita">
+                @csrf
+                <input type="hidden" name="episodio_id" value="{{ $episodio->id }}">
+
+                <div class="modal-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-nowrap align-middle" id="tabela-itens-receita">
+                            <thead class="table-light">
+                                <tr class="text-uppercase fs-11">
+                                    <th style="width: 35%;">Medicamento *</th>
+                                    <th style="width: 15%;">Dosagem *</th>
+                                    <th style="width: 20%;">Frequência *</th>
+                                    <th style="width: 15%;">Duração</th>
+                                    <th style="width: 10%;">Qtd *</th>
+                                    <th style="width: 5%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" name="itens[0][medicamento]" class="form-control form-control-sm" required placeholder="Medicamento"></td>
+                                    <td><input type="text" name="itens[0][dosagem]" class="form-control form-control-sm" required placeholder="Ex: 500mg"></td>
+                                    <td><input type="text" name="itens[0][frequencia]" class="form-control form-control-sm" required placeholder="Ex: 8/8h"></td>
+                                    <td><input type="text" name="itens[0][duracao]" class="form-control form-control-sm" placeholder="Ex: 7 dias"></td>
+                                    <td><input type="text" name="itens[0][quantidade]" class="form-control form-control-sm" required placeholder="Ex: 10 Compridos"></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-start mt-2">
+                        <button type="button" class="btn btn-soft-secondary btn-sm" onclick="addLinhaMedicamento()">
+                            <i class="ri-add-line me-1"></i> Adicionar outro medicamento
+                        </button>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label fw-bold">Observações Gerais (Instruções Adicionais)</label>
+                        <textarea class="form-control bg-light" name="observacoes_gerais" rows="3" placeholder="Ex: Tomar em jejum, evitar bebidas alcoólicas, etc..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-ghost-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info btn-label shadow-sm">
+                        <i class="ri-save-3-line label-icon align-middle fs-16 me-2"></i> Guardar Receita
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Requisitar Exame --}}
+<div class="modal fade" id="modalRequisitarExame" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary py-3">
+                <h5 class="modal-title text-white fw-bold"><i class="ri-flask-line me-2"></i>Nova Requisição de Exames</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-requisicao-exame">
+                @csrf
+                <input type="hidden" name="episodio_id" value="{{ $episodio->id }}">
+
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-4 bg-light border-end">
+                            <div class="p-3">
+                                <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 11px; letter-spacing: 1px;">Categorias</h6>
+                                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                    @foreach($categoriasExames as $index => $categoria)
+                                        <button class="nav-link {{ $index == 0 ? 'active' : '' }} d-flex justify-content-between align-items-center py-2 px-3 mb-2 shadow-sm"
+                                                id="tab-{{ $categoria->id }}" data-bs-toggle="pill" data-bs-target="#content-{{ $categoria->id }}" type="button" role="tab">
+                                            <span><i class="ri-flask-line me-2"></i> {{ $categoria->nome }}</span>
+                                            <span class="badge rounded-pill bg-primary-subtle text-primary">{{ $categoria->exames->count() }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="p-4">
+                                <div class="tab-content" id="v-pills-tabContent" style="min-height: 300px; max-height: 400px; overflow-y: auto;">
+                                    @foreach($categoriasExames as $index => $categoria)
+                                        <div class="tab-pane fade {{ $index == 0 ? 'show active' : '' }}" id="content-{{ $categoria->id }}" role="tabpanel">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="flex-grow-1 border-top"></div>
+                                                <span class="mx-3 text-muted fw-semibold small text-uppercase">{{ $categoria->nome }}</span>
+                                                <div class="flex-grow-1 border-top"></div>
+                                            </div>
+
+                                            <div class="row g-2">
+                                                @foreach($categoria->exames as $exame)
+                                                    <div class="col-sm-6">
+                                                        <div class="exame-card">
+                                                            <input class="form-check-input d-none" type="checkbox" name="exames_ids[]"
+                                                                value="{{ $exame->id }}" id="exame_{{ $exame->id }}">
+                                                            <label class="exame-label" for="exame_{{ $exame->id }}">
+                                                                <div class="d-flex align-items-start">
+                                                                    <div class="avatar-xs flex-shrink-0 me-2">
+                                                                        <div class="avatar-title bg-light rounded text-primary">
+                                                                            {{ substr($exame->codigo, 0, 2) }}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex-grow-1 overflow-hidden">
+                                                                        <h6 class="text-truncate mb-1 fs-13">{{ $exame->nome }}</h6>
+                                                                        <p class="text-muted text-truncate mb-0 small">{{ $exame->codigo }}</p>
+                                                                    </div>
+                                                                    @if($exame->requer_jejum)
+                                                                        <i class="ri-rest-time-line text-warning" title="Requer Jejum"></i>
+                                                                    @endif
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top p-4 bg-light-subtle">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold"><i class="ri-alarm-warning-line me-1 text-danger"></i> Prioridade</label>
+                                <select class="form-select border-primary-subtle" name="prioridade">
+                                    <option value="normal">Normal (Rotina)</option>
+                                    <option value="urgente">Urgente (STAT)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold"><i class="ri-chat-quote-line me-1 text-primary"></i> Justificação Clínica</label>
+                                <textarea class="form-control" name="observacoes_clinicas" rows="2" placeholder="Ex: Paciente com febre há 3 dias..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-white shadow-lg">
+                    <div class="me-auto text-muted small">
+                        <span id="contador-selecionados">0</span> exames selecionados
+                    </div>
+                    <button type="button" class="btn btn-link link-danger fw-medium" data-bs-dismiss="modal">Descartar</button>
+                    <button type="submit" class="btn btn-primary btn-label shadow-sm">
+                        <i class="ri-send-plane-2-fill label-icon align-middle fs-16 me-2"></i> Solicitar Agora
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
 
 @push('scripts')
@@ -400,5 +774,154 @@ function abrirModalEdicao(nota) {
 function finalizarAtendimento() {
     $('#finalizarModal').modal('show');
 }
+
+// 4. REGISTAR RECEITA
+$('#form-receita').on('submit', function(e) {
+    e.preventDefault();
+    const btn = $(this).find('button[type="submit"]');
+    const oldHtml = btn.html();
+
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>');
+
+    $.ajax({
+        url: "{{ route('receitas.store') }}",
+        method: 'POST',
+        data: new FormData(this),
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            $('#modalReceita').modal('hide');
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Receita Gerada!',
+                text: 'Deseja imprimir a receita agora?',
+                showCancelButton: true,
+                confirmButtonText: '<i class="ri-printer-line me-1"></i> Sim, Imprimir',
+                cancelButtonText: 'Não, fechar',
+                confirmButtonColor: '#0ab39c',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Abre a rota de impressão em nova aba (ajuste o nome da rota conforme seu web.php)
+                    window.open(`/receitas/${res.id_receita}/imprimir`, '_blank');
+                }
+                location.reload();
+            });
+        },
+        error: function(xhr) {
+            btn.prop('disabled', false).html(oldHtml);
+            let erroMsg = xhr.responseJSON?.message || 'Falha ao salvar receita.';
+            Swal.fire({ icon: 'error', title: 'Erro!', text: erroMsg });
+        }
+    });
+});
+
+// Contador para índices únicos nos nomes dos inputs (ex: itens[1][medicamento])
+let itemIndex = 1;
+
+function addLinhaMedicamento() {
+    const html = `
+        <tr>
+            <td>
+                <input type="text" name="itens[${itemIndex}][medicamento]" class="form-control form-control-sm" required placeholder="Medicamento">
+            </td>
+            <td>
+                <input type="text" name="itens[${itemIndex}][dosagem]" class="form-control form-control-sm" required placeholder="Ex: 500mg">
+            </td>
+            <td>
+                <input type="text" name="itens[${itemIndex}][frequencia]" class="form-control form-control-sm" required placeholder="Ex: 8/8h">
+            </td>
+            <td>
+                <input type="text" name="itens[${itemIndex}][duracao]" class="form-control form-control-sm" placeholder="Ex: 7 dias">
+            </td>
+            <td>
+                <input type="text" name="itens[${itemIndex}][quantidade]" class="form-control form-control-sm" required placeholder="Ex: 10 Compridos">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-soft-danger" onclick="$(this).closest('tr').remove()">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+    $('#tabela-itens-receita tbody').append(html);
+    itemIndex++;
+}
+
+$(document).ready(function() {
+    // Atualiza o contador de exames selecionados
+    $(document).on('change', 'input[name="exames_ids[]"]', function() {
+        let count = $('input[name="exames_ids[]"]:checked').length;
+        $('#contador-selecionados').text(count).addClass('text-primary fw-bold');
+        if(count > 0) {
+            $('#contador-selecionados').parent().removeClass('text-muted').addClass('text-primary');
+        } else {
+            $('#contador-selecionados').parent().addClass('text-muted').removeClass('text-primary');
+        }
+    });
+
+    // Submissão do Formulário
+    $('#form-requisicao-exame').on('submit', function(e) {
+        e.preventDefault();
+
+        if ($('input[name="exames_ids[]"]:checked').length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nenhum exame selecionado',
+                text: 'Por favor, escolha ao menos um exame para prosseguir.',
+                confirmButtonColor: '#405189'
+            });
+            return;
+        }
+
+        enviarAjax($(this), "{{ route('requisicoes_exames.store') }}", "A requisição foi enviada ao laboratório!");
+    });
+});
 </script>
+@endpush
+
+@push('styles')
+<style>
+    /* Estilo dos Cards de Exame */
+.exame-card {
+    position: relative;
+}
+
+.exame-label {
+    display: block;
+    cursor: pointer;
+    background-color: #fff;
+    border: 1px solid #e9ebec;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+    height: 100%;
+}
+
+.exame-label:hover {
+    border-color: #405189;
+    background-color: #f8f9fa;
+}
+
+/* Quando o Checkbox estiver marcado */
+.exame-card input:checked + .exame-label {
+    background-color: #405189;
+    border-color: #405189;
+}
+
+.exame-card input:checked + .exame-label h6,
+.exame-card input:checked + .exame-label p,
+.exame-card input:checked + .exame-label i {
+    color: #fff !important;
+}
+
+.exame-card input:checked + .exame-label .avatar-title {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+}
+
+/* Scrollbar fina para a lista */
+.tab-content::-webkit-scrollbar { width: 4px; }
+.tab-content::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 10px; }
+</style>
 @endpush

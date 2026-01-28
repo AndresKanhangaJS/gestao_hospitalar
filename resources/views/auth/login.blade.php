@@ -58,8 +58,8 @@
     <div class="right">
         <div class="form-box">
 
-            <h2>Seja bem-vindo</h2>
-            <p class="subtitle">A plataforma Level-Soft</p>
+            <h2>Seja bem-vindo ao Level-Health</h2>
+            <p class="subtitle">Software de Gestão Hospitalar</p>
 
             <form id="loginForm">
 

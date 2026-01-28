@@ -7,6 +7,7 @@ use App\Models\Paciente;
 use App\Models\User;
 use App\Models\Medico;
 use App\Models\TipoAtendimento;
+use App\Models\ExameCategoria;
 use Illuminate\Http\Request;
 use DB;
 use Illuminate\Validation\Rule;
@@ -86,9 +87,18 @@ class EpisodioController extends Controller
                 'paciente_id'         => 'required|exists:pacientes,id',
                 'medico_id'           => 'required|exists:medicos,id',
                 'tipo_atendimento_id' => 'required|exists:tipos_atendimentos,id',
+                // Validação dos novos dados de triagem
+                'pa_sistolica'        => 'nullable|string|max:10',
+                'pa_diastolica'       => 'nullable|string|max:10',
+                'temperatura'         => 'nullable|numeric|between:30,45',
+                'peso'                => 'nullable|numeric|between:0,500',
+                'altura'              => 'nullable|numeric|between:0,3',
+                'frequencia_cardiaca' => 'nullable|integer',
+                'saturacao'           => 'nullable|integer|between:0,100',
             ], [
                 'required' => 'O campo :attribute é obrigatório.',
-                'exists'   => 'O valor selecionado para :attribute é inválido.'
+                'exists'   => 'O valor selecionado para :attribute é inválido.',
+                'numeric'  => 'O campo :attribute deve ser um número.',
             ]);
 
             DB::beginTransaction();
@@ -107,7 +117,15 @@ class EpisodioController extends Controller
                 'codigo_atendimento'  => $codigo,
                 'data_abertura'       => now(),
                 'situacao'            => 'Aberto',
-                'status'              => 'activo'
+                'status'              => 'activo',
+                // Salvando os dados de triagem
+                'pa_sistolica'        => $request->pa_sistolica,
+                'pa_diastolica'       => $request->pa_diastolica,
+                'temperatura'         => $request->temperatura,
+                'peso'                => $request->peso,
+                'altura'              => $request->altura,
+                'frequencia_cardiaca' => $request->frequencia_cardiaca,
+                'saturacao'           => $request->saturacao,
             ]);
 
             DB::commit();
@@ -136,8 +154,11 @@ class EpisodioController extends Controller
     public function show(Episodio $episodio)
     {
         $episodio->load(['paciente', 'medico', 'criador', 'usuarioFechamento' ,'notasClinicas.criador']);
+        $categoriasExames = ExameCategoria::with(['exames' => function($q) {
+            $q->where('status', 'activo')->orderBy('nome');
+        }])->get();
 
-        return view('episodios.detalhes', compact('episodio'));
+        return view('episodios.detalhes', compact('episodio', 'categoriasExames'));
     }
 
     public function destroy(Episodio $episodio)
@@ -166,26 +187,41 @@ class EpisodioController extends Controller
     public function finalizar(Request $request, $id)
     {
         try {
-            $episodio = Episodio::findOrFail($id);
+            // 1. Carrega o episódio com o médico e o usuário vinculado para evitar consultas extras (Eager Loading)
+            $episodio = Episodio::with('medico')->findOrFail($id);
+            $user = auth()->user();
 
-            if ($episodio->situacao === 'Fechado') {
-                return response()->json(['message' => 'Este atendimento já está fechado.'], 400);
+            // 2. BUSCAR O REGISTRO DE MÉDICO DO USUÁRIO LOGADO
+            $medicoLogado = Medico::where('user_id', $user->id)->first();
+
+            // 3. VALIDAÇÃO DE IDENTIDADE: É o médico responsável?
+            // Se o usuário não for médico OU o ID do registro de médico for diferente do médico do episódio
+            if (!$medicoLogado || $medicoLogado->id !== $episodio->medico_id) {
+                return response()->json([
+                    'message' => 'Acesso negado. Apenas o médico responsável por este atendimento (' . $episodio->medico->nome_completo . ') pode finalizá-lo.'
+                ], 403);
             }
 
+            // 4. VALIDAÇÃO DE ESTADO: Já está fechado?
+            if ($episodio->situacao === 'Fechado') {
+                return response()->json(['message' => 'Este atendimento já foi encerrado anteriormente.'], 400);
+            }
+
+            // 5. EXECUÇÃO DO FECHAMENTO
             $episodio->update([
                 'situacao'               => 'Fechado',
                 'data_fecho'             => now(),
-                'user_id_fechamento'     => auth()->id(),
+                'user_id_fechamento'     => $user->id,
                 'observacoes_fechamento' => $request->nota_final,
-                'user_id_atualizacao'    => auth()->id()
+                'user_id_atualizacao'    => $user->id
             ]);
 
             return response()->json([
-                'message' => 'Atendimento finalizado com sucesso!'
+                'message' => 'Atendimento finalizado com sucesso! O prontuário agora encontra-se em modo de leitura.'
             ]);
 
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Erro ao processar: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Erro interno ao processar: ' . $e->getMessage()], 500);
         }
     }
 }

@@ -14,6 +14,7 @@ Route::prefix('pacientes')->group(function () {
     Route::get('/{paciente}/detalhes', [PacienteController::class, 'show'])->name('pacientes.show');
     Route::put('/{paciente}/actualizar', [PacienteController::class, 'update'])->name('pacientes.update');
     Route::delete('/{paciente}', [PacienteController::class, 'destroy'])->name('pacientes.destroy');
+    route::post('/importar', [PacienteController::class, 'import'])->name('pacientes.import');
 });
 // Episódios (Atendimentos)
 Route::prefix('episodios')->group(function () {

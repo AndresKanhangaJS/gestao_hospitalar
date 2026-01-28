@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\UpdatePacienteRequest;
+use App\Models\Seguradora;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\PacientesImport;
 
 class PacienteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Paciente::query();
+        $query = Paciente::with('seguradora');
 
         // 1. Busca Inteligente (Nome, Email, Documento, Telefone)
         if ($request->filled('search')) {
@@ -36,24 +39,27 @@ class PacienteController extends Controller
             $query->where('genero', $request->genero);
         }
 
-        // 4. Filtro por Grupo Sanguíneo
-        if ($request->filled('grupo_sanguineo')) {
-            $query->where('grupo_sanguineo', $request->grupo_sanguineo);
-        }
-
-        // 5. Filtro por Intervalo de Data de Registo (Created_at)
+        // 4. Filtro por Intervalo de Data de Registo (Created_at)
         if ($request->filled('data_inicio') && $request->filled('data_fim')) {
             $query->whereBetween('created_at', [$request->data_inicio . " 00:00:00", $request->data_fim . " 23:59:59"]);
         }
 
+        // 5. Filtro Por Seguradora
+        if ($request->filled('seguradora_id')) {
+            $query->where('seguradora_id', $request->seguradora_id);
+        }
+
         $pacientes = $query->latest()->paginate(12)->withQueryString();
 
-        return view('pacientes.index', compact('pacientes'));
+        $seguradoras = Seguradora::all();
+
+        return view('pacientes.index', compact('pacientes', 'seguradoras'));
     }
 
     public function create()
     {
-        return view('pacientes.registar');
+        $seguradoras = Seguradora::where('status', 'activo')->get();
+        return view('pacientes.registar', compact('seguradoras'));
     }
 
     public function store(Request $request): JsonResponse
@@ -75,6 +81,8 @@ class PacienteController extends Controller
                 'telefone'         => 'nullable|string|min:9|max:20',
                 'email'            => 'nullable|email|max:255|unique:pacientes,email',
                 'morada'           => 'nullable|string|max:500',
+                'seguradora_id'        => 'required_if:tem_seguro,on|nullable|exists:seguradoras,id',
+                'numero_cartao_seguro' => 'nullable|string|max:50',
                 'grupo_sanguineo'  => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
                 'alergias'         => 'nullable|string|max:1000',
             ], [
@@ -82,11 +90,25 @@ class PacienteController extends Controller
                 'data_nascimento.before_or_equal' => 'A data de nascimento não pode ser uma data futura.',
                 'numero_documento.unique' => 'Este número de documento já está registado para este tipo.',
                 'email.unique' => 'Este e-mail já pertence a outro paciente.',
-                'required' => 'O campo :attribute é obrigatório.'
+                'required' => 'O campo :attribute é obrigatório.',
+                'seguradora_id.required_if' => 'Selecione a seguradora.',
+                //'numero_cartao_seguro.required_if' => 'O número do cartão é obrigatório para quem tem seguro.',
             ]);
 
+            // Gerar código único de 5 dígitos
+            do {
+                $codigo = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+            } while (Paciente::where('codigo_paciente', $codigo)->exists());
+
+            $validado['codigo_paciente']  = $codigo;
             $validado['user_id_criacao'] = Auth::id();
             $validado['status']          = 'activo';
+
+            // Se o switch estiver OFF, garantiR que os dados de seguro sejam nulos
+            if (!$request->has('tem_seguro')) {
+                $validado['seguradora_id'] = null;
+                $validado['numero_cartao_seguro'] = null;
+            }
 
             $paciente = Paciente::create($validado);
 
@@ -112,7 +134,7 @@ class PacienteController extends Controller
     public function show(Paciente $paciente)
     {
         // Carregamos quem criou e os episódios (ordenados pelos mais recentes)
-        $paciente->load(['criador', 'atualizador', 'usuarioDeletou','episodios' => function($query) {
+        $paciente->load(['criador', 'atualizador', 'usuarioDeletou', 'seguradora', 'episodios' => function($query) {
             $query->latest();
         }]);
 
@@ -121,7 +143,8 @@ class PacienteController extends Controller
 
     public function edit(Paciente $paciente)
     {
-        return view('pacientes.editar', compact('paciente'));
+        $seguradoras = Seguradora::where('status', 'activo')->get();
+        return view('pacientes.editar', compact('paciente', 'seguradoras'));
     }
 
     public function update(UpdatePacienteRequest $request, Paciente $paciente)
@@ -129,10 +152,13 @@ class PacienteController extends Controller
         try {
             $data = $request->validated();
 
-            // Preenche o modelo com os novos dados MAS não guarda ainda
+            if (!$request->has('tem_seguro')) {
+                $data['seguradora_id'] = null;
+                $data['numero_cartao_seguro'] = null;
+            }
+
             $paciente->fill($data);
 
-            // Verifica se, após o preenchimento, algo realmente mudou
             if (!$paciente->isDirty()) {
                 return response()->json([
                     'status'  => 'info',
@@ -140,7 +166,6 @@ class PacienteController extends Controller
                 ], 200);
             }
 
-            // Se chegou aqui, houve mudança. Adicionamos quem alterou.
             $paciente->user_id_atualizacao = auth()->id();
             $paciente->save();
 
@@ -155,6 +180,25 @@ class PacienteController extends Controller
                 'status'  => 'error',
                 'message' => 'Erro ao processar atualização: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+            'seguradora_id' => 'required_if:tipo_importacao,segurado'
+        ]);
+
+        try {
+            $seguradora_id = ($request->tipo_importacao == 'segurado') ? $request->seguradora_id : null;
+
+            Excel::import(new PacientesImport($seguradora_id), $request->file('file'));
+
+            return back()->with('success', 'Importação concluída! Os pacientes foram registados no sistema.');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            return back()->with('error', 'Erro nas linhas do Excel. Verifique os dados.');
         }
     }
 

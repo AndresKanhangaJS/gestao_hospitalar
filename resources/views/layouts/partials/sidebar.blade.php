@@ -66,6 +66,9 @@
                                 <a href="{{ route('users.index') }}" class="nav-link" data-key="t-users"> Usuários </a>
                             </li>
                             @endcan
+                            <li class="nav-item">
+                                <a href="{{ route('seguradoras.index') }}" class="nav-link" data-key="t-convenios"> Convénios </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -77,6 +80,11 @@
                     <div class="collapse menu-dropdown" id="sidebarGestPacientes">
                         <ul class="nav nav-sm flex-column">
                             @can('pacientes.menu')
+                            <li class="nav-item">
+                                <a href="{{ route('episodios.index') }}" class="nav-link">
+                                    Atendimentos/Episodios
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a href="#sidebarPacientes" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPacientes" data-key="t-calender">
                                     Pacientes

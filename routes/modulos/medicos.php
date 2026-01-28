@@ -12,3 +12,9 @@ Route::prefix('medicos')->group(function () {
     Route::put('/{medico}/actualizar', [MedicoController::class, 'update'])->name('medicos.update');
     Route::delete('/{medico}', [MedicoController::class, 'destroy'])->name('medicos.destroy');
 });
+
+// Receitas Médicas
+Route::prefix('receitas')->group(function () {
+    Route::post('/store', [MedicoController::class, 'storeReceita'])->name('receitas.store');
+    Route::get('/{id}/imprimir', [MedicoController::class, 'imprimirReceita'])->name('receitas.imprimir');
+});

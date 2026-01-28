@@ -30,6 +30,9 @@
                     <a href="{{ route('pacientes.create') }}" class="btn btn-success btn-label">
                         <i class="ri-add-line label-icon align-middle fs-16 me-2"></i> Novo Paciente
                     </a>
+                    <button type="button" class="btn btn-soft-secondary btn-label" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="ri-file-excel-2-line label-icon align-middle fs-16 me-2"></i> Importar
+                    </button>
                     @endcan
                 </div>
             </div>
@@ -62,10 +65,12 @@
                         </div>
 
                         <div class="col-xxl-2 col-sm-4">
-                            <select class="form-select bg-white border-light" name="grupo_sanguineo">
-                                <option value="">G. Sanguíneo</option>
-                                @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
-                                    <option value="{{ $tipo }}" {{ request('grupo_sanguineo') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                            <select class="form-select bg-white border-light" name="seguradora_id">
+                                <option value="">Seguradora (Todas)</option>
+                                @foreach($seguradoras as $seg)
+                                    <option value="{{ $seg->id }}" {{ request('seguradora_id') == $seg->id ? 'selected' : '' }}>
+                                        {{ $seg->nome }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -91,7 +96,7 @@
                                 <th scope="col">Documentação</th>
                                 <th scope="col">Contacto</th>
                                 <th scope="col">Perfil</th>
-                                <th scope="col">G. Sanguíneo</th>
+                                <th scope="col">Convénio / Seguro</th>
                                 <th scope="col">Status</th>
                                 <th scope="col" class="text-center">Acções</th>
                             </tr>
@@ -126,10 +131,17 @@
                                     <span class="text-muted fs-11 ms-1">({{ $paciente->genero }})</span>
                                 </td>
                                 <td>
-                                    @if($paciente->grupo_sanguineo)
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ $paciente->grupo_sanguineo }}</span>
+                                    @if($paciente->seguradora)
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-medium text-primary">{{ $paciente->seguradora->nome }}</span>
+                                            @if($paciente->numero_cartao_seguro)
+                                                <small class="text-muted"><i class="ri-id-card-line me-1"></i>{{ $paciente->numero_cartao_seguro }}</small>
+                                            @else
+                                                <span class="badge bg-warning w-fit-content" style="width: fit-content;">Nº Pendente</span>
+                                            @endif
+                                        </div>
                                     @else
-                                        <span class="text-muted">---</span>
+                                        <span class="text-muted small">Particular</span>
                                     @endif
                                 </td>
                                 <td>
@@ -232,71 +244,134 @@
 </div>
 @endcan
 
+{{-- Modal de Importação --}}
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light p-3">
+                <h5 class="modal-title"><i class="ri-upload-cloud-2-line me-1"></i> Importar Pacientes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('pacientes.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Pacientes no Arquivo</label>
+                        <select class="form-select" name="tipo_importacao" id="tipo_importacao">
+                            <option value="particular">Particular (Sem Seguro)</option>
+                            <option value="segurado">Assegurados (Com Convênio)</option>
+                        </select>
+                    </div>
+
+                    <div id="seguradora_select_group" style="display: none;" class="mb-3 bg-light p-3 rounded border">
+                        <label class="form-label fw-bold text-primary">Selecionar Seguradora para este lote</label>
+                        <select class="form-select border-primary" name="seguradora_id">
+                            <option value="">Escolha a seguradora...</option>
+                            @foreach($seguradoras as $seg)
+                                <option value="{{ $seg->id }}">{{ $seg->nome }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Todos os pacientes deste arquivo serão vinculados a esta seguradora.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Arquivo Excel (.xlsx, .xls)</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx, .xls" required>
+                        <div class="mt-2">
+                            <a href="{{ asset('templates/modelo_importacao_pacientes.xlsx') }}" class="text-primary fs-12">
+                                <i class="ri-download-line"></i> Descarregar modelo de Excel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+                    <button type="submit" class="btn btn-primary" id="btnImportar">Iniciar Importação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    // Abrir o modal de confirmação
-    $(document).on('click', '.btn-delete-paciente', function(e) {
-        e.preventDefault();
-        let url = $(this).data('url');
-        let nome = $(this).closest('tr').find('.fw-medium').text();
+    $(document).ready(function() {
+        // --- NOTIFICAÇÕES DE SESSÃO (IMPORTAÇÃO) ---
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: "{{ session('success') }}",
+                timer: 4000,
+                showConfirmButton: false
+            });
+        @endif
 
-        $('#deleteForm').attr('action', url);
-        $('#pacienteNome').text(nome);
-        $('#motivo').val(''); // Limpa o motivo
-        $('#deleteModal').modal('show');
-    });
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Ops! Algo correu mal',
+                text: "{{ session('error') }}",
+                confirmButtonText: 'Entendido'
+            });
+        @endif
 
-    // Submissão do formulário de eliminação via AJAX
-    $('#deleteForm').on('submit', function(e) {
-        e.preventDefault();
-        let form = $(this);
-        let btnSubmit = form.find('button[type="submit"]');
-
-        // Feedback visual no botão do modal
-        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> A eliminar...');
-
-        $.ajax({
-            url: form.attr('action'),
-            type: 'POST',
-            data: form.serialize(),
-            dataType: 'json',
-            success: function(response) {
-                $('#deleteModal').modal('hide');
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Eliminado!',
-                    text: response.message || 'O registo foi removido com sucesso.',
-                    confirmButtonText: 'Concluído',
-                    confirmButtonColor: '#0ab39c', // Verde do seu padrão
-                    allowOutsideClick: false
-                }).then(() => {
-                    location.reload(); // Recarrega a tabela para reflectir a exclusão
-                });
-            },
-            error: function(xhr) {
-                // Reabilita o botão em caso de erro
-                btnSubmit.prop('disabled', false).html('<i class="ri-delete-bin-line label-icon align-middle fs-16 me-2"></i> Confirmar e Excluir');
-
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Atenção',
-                        text: errors.motivo ? errors.motivo[0] : 'O motivo é obrigatório para excluir.',
-                        confirmButtonText: 'Tentar Novamente',
-                        confirmButtonColor: '#f7b84b' // Cor de aviso (Amarelo/Laranja)
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erro!',
-                        text: 'Não foi possível eliminar o registo. Tente novamente.',
-                        confirmButtonText: 'Fechar',
-                        confirmButtonColor: '#f06548' // Vermelho
-                    });
-                }
+        // --- LÓGICA DO MODAL DE IMPORTAÇÃO ---
+        $('#tipo_importacao').on('change', function() {
+            if ($(this).val() === 'segurado') {
+                $('#seguradora_select_group').slideDown();
+                $('select[name="seguradora_id"]').prop('required', true);
+            } else {
+                $('#seguradora_select_group').slideUp();
+                $('select[name="seguradora_id"]').prop('required', false);
             }
+        });
+
+        $('#importForm').on('submit', function() {
+            $('#btnImportar').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Processando...');
+        });
+
+        // --- LÓGICA DE ELIMINAÇÃO AJAX ---
+        $(document).on('click', '.btn-delete-paciente', function(e) {
+            e.preventDefault();
+            let url = $(this).data('url');
+            let nome = $(this).closest('tr').find('.fw-medium').text();
+
+            $('#deleteForm').attr('action', url);
+            $('#pacienteNome').text(nome);
+            $('#motivo').val('');
+            $('#deleteModal').modal('show');
+        });
+
+        $('#deleteForm').on('submit', function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let btnSubmit = form.find('button[type="submit"]');
+
+            btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> A eliminar...');
+
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                dataType: 'json',
+                success: function(response) {
+                    $('#deleteModal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado!',
+                        text: response.message,
+                        confirmButtonColor: '#0ab39c'
+                    }).then(() => { location.reload(); });
+                },
+                error: function(xhr) {
+                    btnSubmit.prop('disabled', false).html('<i class="ri-delete-bin-line label-icon align-middle fs-16 me-2"></i> Confirmar e Excluir');
+                    let msg = (xhr.status === 422) ? 'O motivo é obrigatório.' : 'Erro ao eliminar.';
+                    Swal.fire({ icon: 'error', title: 'Erro', text: msg });
+                }
+            });
         });
     });
 </script>

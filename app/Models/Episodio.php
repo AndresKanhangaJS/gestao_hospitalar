@@ -22,7 +22,14 @@ class Episodio extends Model
     protected $fillable = [
         'paciente_id', 'medico_id', 'tipo_atendimento_id', 'user_id_criacao',
         'user_id_atualizacao', 'codigo_atendimento', 'data_abertura',
-        'data_fecho', 'status', 'situacao', 'user_id_fechamento', 'observacoes_fechamento'
+        'data_fecho', 'status', 'situacao', 'user_id_fechamento', 'observacoes_fechamento',
+        'pa_sistolica',
+        'pa_diastolica',
+        'temperatura',
+        'peso',
+        'altura',
+        'frequencia_cardiaca',
+        'saturacao'
     ];
 
     protected $casts = [
@@ -60,5 +67,14 @@ class Episodio extends Model
     public function notasClinicas(): HasMany
     {
         return $this->hasMany(NotaClinica::class, 'episodio_id');
+    }
+
+    public function receitas() {
+        return $this->hasMany(Receita::class);
+    }
+
+    public function requisicoesExames()
+    {
+        return $this->hasMany(RequisicaoExame::class, 'episodio_id');
     }
 }

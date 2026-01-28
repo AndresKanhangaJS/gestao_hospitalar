@@ -16,7 +16,7 @@ class Paciente extends Model
     protected $table = 'pacientes';
 
     protected $fillable = [
-        'nome_completo', 'data_nascimento', 'genero', 'tipo_documento',
+        'nome_completo', 'codigo_paciente', 'seguradora_id', 'numero_cartao_seguro', 'user_id','data_nascimento', 'genero', 'tipo_documento',
         'numero_documento', 'telefone', 'email', 'morada',
         'grupo_sanguineo', 'alergias', 'user_id_criacao', 'status', 'motivo_exclusao',
         'user_id_delete', 'user_id_atualizacao'
@@ -30,6 +30,11 @@ class Paciente extends Model
     public function episodios(): HasMany
     {
         return $this->hasMany(Episodio::class, 'paciente_id');
+    }
+
+    public function seguradora()
+    {
+        return $this->belongsTo(Seguradora::class);
     }
 
     public function criador(): BelongsTo

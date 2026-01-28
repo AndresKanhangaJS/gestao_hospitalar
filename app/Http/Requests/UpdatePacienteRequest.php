@@ -31,6 +31,8 @@ class UpdatePacienteRequest extends FormRequest
             ],
             'grupo_sanguineo'  => 'nullable|string|max:5',
             'status'           => 'required|in:activo,inactivo',
+            'seguradora_id'    => 'required_if:tem_seguro,on|nullable|exists:seguradoras,id',
+            'numero_cartao_seguro' => 'nullable|string|max:50',
             'morada'           => 'nullable|string|max:500',
             'alergias'         => 'nullable|string',
         ];

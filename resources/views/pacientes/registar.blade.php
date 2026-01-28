@@ -36,6 +36,7 @@
             <form id="form-paciente" class="tablelist-form" autocomplete="true" action="{{ route('pacientes.store') }}" method="POST">
                 @csrf
                 <div class="card-body p-4">
+
                     <div class="mb-5">
                         <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
                             <i class="ri-user-3-line me-2 fs-20"></i> Dados Pessoais
@@ -100,6 +101,38 @@
                         </div>
                     </div>
 
+                    <div class="mb-5">
+                        <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
+                            <i class="ri-shield-check-line me-2 fs-20"></i> Convénio / Seguro de Saúde
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-lg-12">
+                                <div class="form-check form-switch form-switch-lg mb-3" dir="ltr">
+                                    <input type="checkbox" class="form-check-input" id="tem_seguro" name="tem_seguro">
+                                    <label class="form-check-label fw-semibold text-muted small" for="tem_seguro">POSSUI SEGURO DE SAÚDE?</label>
+                                </div>
+                            </div>
+
+                            <div id="seccao_seguradora" style="display: none;" class="row g-3 ms-0 p-0">
+                                <div class="col-lg-6">
+                                    <label for="seguradora_id" class="form-label fw-semibold text-muted small">SEGURADORA</label>
+                                    <select class="form-select border-light bg-light" name="seguradora_id" id="seguradora_id">
+                                        <option value="" selected disabled>Selecione a seguradora...</option>
+                                        @foreach($seguradoras as $seguradora)
+                                            <option value="{{ $seguradora->id }}">{{ $seguradora->nome }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-6">
+                                    <label for="numero_cartao_seguro" class="form-label fw-semibold text-muted small">NÚMERO DO CARTÃO</label>
+                                    <input type="text" id="numero_cartao_seguro" name="numero_cartao_seguro" class="form-control border-light bg-light" placeholder="000-000-000">
+                                    <div class="form-text text-muted small">Deixe vazio se ainda não possuir o número.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @can('pacientes.informacoes_medicas')
                     <div class="mb-2">
                         <h5 class="card-title text-danger border-bottom pb-3 mb-4 d-flex align-items-center">
                             <i class="ri-heart-pulse-line me-2 fs-20"></i> Informações Médicas
@@ -120,6 +153,7 @@
                             </div>
                         </div>
                     </div>
+                    @endcan
                 </div>
 
                 <div class="card-footer bg-light-subtle hstack gap-2 justify-content-end p-4 border-top">
@@ -137,6 +171,28 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    $('button[type="reset"]').on('click', function() {
+        // Aguarda um milisegundo para o reset nativo terminar
+        setTimeout(() => {
+            $('#seccao_seguradora').slideUp();
+            $('#seguradora_id, #numero_cartao_seguro').removeAttr('required');
+            $('.form-control, .form-select').removeClass('is-invalid is-valid');
+        }, 10);
+    });
+
+    // Lógica para mostrar/esconder campos de seguro
+    $('#tem_seguro').on('change', function() {
+        if($(this).is(':checked')) {
+            $('#seccao_seguradora').slideDown();
+            $('#seguradora_id').attr('required', true);
+            //$('#numero_cartao_seguro').attr('required', true);
+        } else {
+            $('#seccao_seguradora').slideUp();
+            $('#seguradora_id').val('').removeAttr('required');
+            //$('#numero_cartao_seguro').val('').removeAttr('required');
+        }
+    });
+
     $('#form-paciente').on('submit', function(e) {
         e.preventDefault();
         const form = $(this);
@@ -171,8 +227,14 @@ $(document).ready(function() {
                     allowEscapeKey: false
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Limpa o formulário e reabilita o botão para novo registo
+                        // 1. Limpa o formulário (reseta inputs nativos)
                         form[0].reset();
+
+                        // 2. FORÇAR o fechamento da seção de seguro e remover required
+                        $('#seccao_seguradora').hide();
+                        $('#seguradora_id, #numero_cartao_seguro').removeAttr('required').val('');
+
+                        // 3. Reset visual
                         window.scrollTo(0, 0);
                         btnSubmit.prop('disabled', false).html('<i class="ri-save-line align-bottom me-1"></i> Registar Paciente');
                         // Remove manualmente classes de sucesso se o seu layout as usar

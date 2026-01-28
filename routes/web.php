@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\DashboardController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -15,9 +16,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/', function () {
-        return view('dashboard.index');
-    })->name('dashboard');
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // ACL Users
     require __DIR__.'/config_sistema/usuarios.php';
@@ -31,4 +31,5 @@ Route::middleware('auth')->group(function () {
     // Módulos do Sistema
     require __DIR__.'/modulos/pacientes.php';
     require __DIR__.'/modulos/medicos.php';
+    require __DIR__.'/modulos/exames.php';
 });

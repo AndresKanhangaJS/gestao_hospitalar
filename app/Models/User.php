@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Medico;
 
 class User extends Authenticatable
 {
@@ -20,8 +21,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'codigo',
         'email',
         'password',
+        'user_id_atualizacao',
+        'user_id_delete',
+        'motivo_exclusao',
         'status',
     ];
 
@@ -57,5 +62,10 @@ class User extends Authenticatable
             substr($parts[0], 0, 1) .
             substr(end($parts), 0, 1)
         );
+    }
+
+    public function medico()
+    {
+        return $this->hasOne(Medico::class, 'user_id');
     }
 }

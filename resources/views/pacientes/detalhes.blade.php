@@ -36,6 +36,7 @@
                 </div>
 
                 <h5 class="mb-1 fw-bold text-dark">{{ $paciente->nome_completo }}</h5>
+                <span class="badge bg-secondary fs-11 align-middle ms-1">#{{ $paciente->codigo_paciente }}</span>
                 <p class="text-muted fs-12 mb-3 text-uppercase">
                     <i class="ri-calendar-check-line me-1"></i> Paciente desde {{ $paciente->created_at->format('M, Y') }}
                 </p>
@@ -48,17 +49,19 @@
             </div>
 
             <div class="card-footer py-3 bg-light-subtle border-top-0">
-                <div class="row text-center">
+                <div class="row justify-content-center text-center">
                     <div class="col-6 border-end">
                         <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Idade Atual</p>
                         <h6 class="mb-0 fw-bold text-dark">{{ $paciente->data_nascimento->age }} Anos</h6>
                     </div>
+                    @can('pacientes.informacoes_medicas')
                     <div class="col-6">
                         <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">G. Sanguíneo</p>
                         <h6 class="mb-0 fw-bold text-danger">
                             <i class="ri-drop-fill me-1"></i>{{ $paciente->grupo_sanguineo ?? 'N/D' }}
                         </h6>
                     </div>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -68,6 +71,30 @@
                 <h6 class="card-title mb-0 fw-bold text-uppercase fs-12">
                     <i class="ri-contacts-book-line me-2 align-middle text-primary"></i>Informações de Contacto
                 </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="p-3 bg-light-subtle border-bottom border-top">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-sm">
+                                <div class="avatar-title bg-soft-info text-info rounded-circle fs-20 shadow-sm">
+                                    <i class="ri-shield-cross-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Convênio / Seguradora</p>
+                            <h6 class="fs-14 mb-0 fw-bold text-primary">{{ $paciente->seguradora->nome ?? 'Particular' }}</h6>
+                            @if($paciente->numero_cartao_seguro)
+                                <div class="d-flex align-items-center mt-1">
+                                    <span class="badge bg-white text-dark border shadow-sm fs-10">
+                                        <i class="ri-id-card-line me-1 text-muted"></i>{{ $paciente->numero_cartao_seguro }}
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="d-flex align-items-center mb-4">
@@ -116,6 +143,8 @@
     </div>
 
     <div class="col-xxl-9 col-lg-8">
+
+        @can('pacientes.informacoes_medicas')
         <div class="alert {{ $paciente->alergias ? 'alert-danger' : 'alert-info' }} border-0 d-flex align-items-center mb-4 shadow-sm p-3" role="alert">
             <lord-icon src="https://cdn.lordicon.com/tdrtiskw.json" trigger="loop" colors="primary:#f06548,secondary:#ffffff" style="width:45px;height:45px" class="me-3"></lord-icon>
             <div>
@@ -123,6 +152,8 @@
                 <p class="mb-0 fs-14">{{ $paciente->alergias ?? 'Nenhuma alergia ou restrição registada até o momento para este paciente.' }}</p>
             </div>
         </div>
+        @endcan
+
 
         <div class="card shadow-sm border-0">
             <div class="card-header p-0 border-bottom-0">

@@ -106,6 +106,41 @@
                         </div>
                     </div>
 
+                    <div class="mb-5">
+                        <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
+                            <i class="ri-shield-check-line me-2 fs-20"></i> Convénio / Seguro de Saúde
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-lg-12">
+                                <div class="form-check form-switch form-switch-md mb-3">
+                                    <input class="form-check-input" type="checkbox" name="tem_seguro" id="tem_seguro" {{ $paciente->seguradora_id ? 'checked' : '' }}>
+                                    <label class="form-check-label fw-semibold text-muted" for="tem_seguro">POSSUI SEGURO DE SAÚDE?</label>
+                                </div>
+                            </div>
+
+                            <div id="section_seguro" style="{{ $paciente->seguradora_id ? '' : 'display: none;' }}">
+                                <div class="row g-3">
+                                    <div class="col-lg-6">
+                                        <label for="seguradora_id" class="form-label fw-semibold text-muted small">SEGURADORA</label>
+                                        <select class="form-select border-light bg-light" name="seguradora_id" id="seguradora_id">
+                                            <option value="">Selecione a seguradora...</option>
+                                            @foreach($seguradoras as $seguradora)
+                                                <option value="{{ $seguradora->id }}" {{ $paciente->seguradora_id == $seguradora->id ? 'selected' : '' }}>
+                                                    {{ $seguradora->nome }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="numero_cartao_seguro" class="form-label fw-semibold text-muted small">Nº DO CARTÃO</label>
+                                        <input type="text" id="numero_cartao_seguro" name="numero_cartao_seguro" class="form-control border-light bg-light" value="{{ $paciente->numero_cartao_seguro }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @can('pacientes.informacoes_medicas')
                     <div class="mb-2">
                         <h5 class="card-title text-danger border-bottom pb-3 mb-4 d-flex align-items-center">
                             <i class="ri-heart-pulse-line me-2 fs-20"></i> Informações Médicas
@@ -126,7 +161,9 @@
                             </div>
                         </div>
                     </div>
+                    @endcan
                 </div>
+
 
                 <div class="card-footer bg-light-subtle hstack gap-2 justify-content-end p-4 border-top">
                     <button type="submit" class="btn btn-primary px-5 shadow-sm">
@@ -142,6 +179,16 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    $('#tem_seguro').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#section_seguro').slideDown();
+        } else {
+            $('#section_seguro').slideUp();
+            $('#seguradora_id').val('');
+            $('#numero_cartao_seguro').val('');
+        }
+    });
+
     const form = $('#form-paciente-edit');
 
     // Captura o estado inicial

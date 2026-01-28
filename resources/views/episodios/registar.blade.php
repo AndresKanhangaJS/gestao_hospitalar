@@ -55,6 +55,58 @@
                         </div>
                     </div>
 
+                    <div class="mb-5">
+                        <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
+                            <i class="ri-pulse-line me-2 fs-20"></i> Triagem e Sinais Vitais
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label fw-semibold text-muted small">PRESSÃO ARTERIAL (PA)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-light bg-light"><i class="ri-heart-3-line text-danger"></i></span>
+                                    <input type="text" name="pa_sistolica" class="form-control border-light bg-light" placeholder="120" style="width: 40px;">
+                                    <span class="input-group-text border-light bg-light">/</span>
+                                    <input type="text" name="pa_diastolica" class="form-control border-light bg-light" placeholder="80">
+                                    <span class="input-group-text border-light bg-light">mmHg</span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2 col-md-6">
+                                <label class="form-label fw-semibold text-muted small">TEMPERATURA</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-light bg-light"><i class="ri-temp-hot-line text-warning"></i></span>
+                                    <input type="number" step="0.1" name="temperatura" class="form-control border-light bg-light" placeholder="36.5">
+                                    <span class="input-group-text border-light bg-light">°C</span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2 col-md-6">
+                                <label class="form-label fw-semibold text-muted small">PESO</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" name="peso" class="form-control border-light bg-light" placeholder="70.0">
+                                    <span class="input-group-text border-light bg-light">kg</span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2 col-md-6">
+                                <label class="form-label fw-semibold text-muted small">ALTURA</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" name="altura" class="form-control border-light bg-light" placeholder="1.75">
+                                    <span class="input-group-text border-light bg-light">m</span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-12">
+                                <label class="form-label fw-semibold text-muted small">FREQ. CARDÍACA / SATURAÇÃO</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-light bg-light"><i class="ri-rest-time-line text-info"></i></span>
+                                    <input type="number" name="frequencia_cardiaca" class="form-control border-light bg-light" placeholder="BPM">
+                                    <input type="number" name="saturacao" class="form-control border-light bg-light" placeholder="SpO2 %">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-2">
                         <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
                             <i class="ri-stethoscope-line me-2 fs-20"></i> Dados da Consulta / Atendimento
