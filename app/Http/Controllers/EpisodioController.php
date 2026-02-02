@@ -87,6 +87,7 @@ class EpisodioController extends Controller
                 'paciente_id'         => 'required|exists:pacientes,id',
                 'medico_id'           => 'required|exists:medicos,id',
                 'tipo_atendimento_id' => 'required|exists:tipos_atendimentos,id',
+                'prioridade'          => 'required|string',
                 // Validação dos novos dados de triagem
                 'pa_sistolica'        => 'nullable|string|max:10',
                 'pa_diastolica'       => 'nullable|string|max:10',
@@ -118,7 +119,8 @@ class EpisodioController extends Controller
                 'data_abertura'       => now(),
                 'situacao'            => 'Aberto',
                 'status'              => 'activo',
-                // Salvando os dados de triagem
+                'prioridade'          => $request->prioridade ?? null,
+                // Dados de triagem
                 'pa_sistolica'        => $request->pa_sistolica,
                 'pa_diastolica'       => $request->pa_diastolica,
                 'temperatura'         => $request->temperatura,

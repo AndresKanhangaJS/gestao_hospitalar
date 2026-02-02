@@ -112,7 +112,7 @@
                             <i class="ri-stethoscope-line me-2 fs-20"></i> Dados da Consulta / Atendimento
                         </h5>
                         <div class="row g-4">
-                            <div class="col-lg-4">
+                            <div class="col-lg-3">
                                 <label class="form-label fw-semibold text-muted small">DATA/HORA DE ABERTURA</label>
                                 <div class="input-group">
                                     <span class="input-group-text border-light bg-light"><i class="ri-calendar-event-line text-primary"></i></span>
@@ -121,23 +121,32 @@
                                     <input type="hidden" name="data_abertura" value="{{ now() }}">
                                 </div>
                             </div>
-
+                            <div class="col-lg-2">
+                                <label for="tipo_atendimento_id" class="form-label fw-semibold text-muted small">TIPO DE ATENDIMENTO <span class="text-danger">*</span></label>
+                                <select class="form-select border-light bg-light" name="tipo_atendimento_id" id="tipo_atendimento_id" required>
+                                    <option value="" selected disabled>Selecione o tipo...</option>
+                                    @foreach($tipos as $tipo)
+                                        <option value="{{ $tipo->id }}">{{ $tipo->nome }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="prioridade" class="form-label fw-semibold text-muted small">PRIORIDADE <span class="text-danger">*</span></label>
+                                <select class="form-select border-light bg-light fw-bold" name="prioridade" id="prioridade" required onchange="updatePriorityColor(this)">
+                                    <option value="" selected disabled>Classificar...</option>
+                                    <option value="Emergente" data-color="#f06548">🔴 Emergente</option>
+                                    <option value="Muito Urgente" data-color="#ffbe0b">🟠 Muito Urgente</option>
+                                    <option value="Urgente" data-color="#f7cc53">🟡 Urgente</option>
+                                    <option value="Pouco Urgente" data-color="#45cb85">🟢 Pouco Urgente</option>
+                                    <option value="Não Urgente" data-color="#3577f1">🔵 Não Urgente</option>
+                                </select>
+                            </div>
                             <div class="col-lg-5">
                                 <label for="medico_id" class="form-label fw-semibold text-muted small">MÉDICO RESPONSÁVEL <span class="text-danger">*</span></label>
                                 <select class="form-select border-light bg-light" name="medico_id" id="medico_id" required>
                                     <option value="" selected disabled>Selecione o médico...</option>
                                     @foreach($medicos as $medico)
                                         <option value="{{ $medico->id }}">{{ $medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $medico->nome_completo }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-lg-3">
-                                <label for="tipo_atendimento_id" class="form-label fw-semibold text-muted small">TIPO DE ATENDIMENTO <span class="text-danger">*</span></label>
-                                <select class="form-select border-light bg-light" name="tipo_atendimento_id" id="tipo_atendimento_id" required>
-                                    <option value="" selected disabled>Selecione o tipo...</option>
-                                    @foreach($tipos as $tipo)
-                                        <option value="{{ $tipo->id }}">{{ $tipo->nome }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -230,5 +239,19 @@ $(document).ready(function() {
         });
     });
 });
+
+function updatePriorityColor(select) {
+    const selectedOption = select.options[select.selectedIndex];
+    const color = selectedOption.getAttribute('data-color');
+
+    // Altera a cor do texto e borda do select para dar destaque
+    if (color) {
+        select.style.borderColor = color;
+        select.style.color = color;
+    } else {
+        select.style.borderColor = "#ced4da";
+        select.style.color = "#212529";
+    }
+}
 </script>
 @endpush

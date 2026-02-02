@@ -64,10 +64,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Paciente</th>
-                                <th>Tipo</th>
+                                <th>Prioridade</th> <th>Tipo</th>
                                 <th>Hora Entrada</th>
                                 <th>Status</th>
-                                <th>Ação</th>
+                                <th scope="col" class="text-center">Acções</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,24 +76,48 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-xs me-2">
-                                            <div class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                            <span class="avatar-title rounded-circle bg-soft-primary fw-bold">
                                                 {{ substr($ep->paciente->nome_completo, 0, 1) }}
-                                            </div>
+                                            </span>
                                         </div>
                                         <span class="fw-bold">{{ $ep->paciente->nome_completo }}</span>
                                     </div>
                                 </td>
+
+                                <td>
+                                    @php
+                                        $corPrioridade = [
+                                            'Emergente'      => 'danger',  // Vermelho
+                                            'Muito Urgente'  => 'warning', // Laranja
+                                            'Urgente'        => 'info',    // Amarelo (ou custom)
+                                            'Pouco Urgente'  => 'success', // Verde
+                                            'Não Urgente'    => 'primary'  // Azul
+                                        ];
+                                        $classe = $corPrioridade[$ep->prioridade] ?? 'secondary';
+                                    @endphp
+                                    <span class="badge bg-{{ $classe }} text-uppercase">
+                                        <i class="ri-checkbox-blank-circle-fill me-1 small"></i>{{ $ep->prioridade }}
+                                    </span>
+                                </td>
+
                                 <td><span class="badge bg-soft-info text-info">{{ $ep->tipoAtendimento->nome }}</span></td>
                                 <td>{{ $ep->created_at->format('H:i') }}</td>
                                 <td><span class="badge bg-success">Aguardando</span></td>
                                 <td>
-                                    <a href="{{ route('episodios.show', $ep) }}" class="btn btn-primary btn-sm">
-                                        <i class="ri-external-link-line"></i> Abrir Ficha
-                                    </a>
+                                    <div class="hstack gap-2 justify-content-center">
+                                        <a href="{{ route('episodios.show', $ep) }}" class="btn btn-primary btn-sm shadow-sm">
+                                            <i class="ri-external-link-line me-1"></i> Abrir Ficha
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="5" class="text-center text-muted">Sem pacientes em espera para hoje.</td></tr>
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="ri-inbox-line fs-24 d-block mb-2"></i>
+                                    Sem pacientes em espera para hoje.
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -11,8 +11,22 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between shadow-sm p-3 bg-white rounded border-start border-primary border-3">
-            <h4 class="mb-sm-0 text-uppercase fw-bold text-primary">
+            <h4 class="mb-sm-0 text-uppercase fw-bold text-primary d-flex align-items-center">
                 <i class="ri-hospital-line me-1"></i> Episódio: {{ $episodio->codigo_atendimento }}
+
+                @php
+                    $corPrioridade = [
+                        'Emergente'      => 'danger',
+                        'Muito Urgente'  => 'warning',
+                        'Urgente'        => 'info', // ou uma cor customizada para Amarelo
+                        'Pouco Urgente'  => 'success',
+                        'Não Urgente'    => 'primary'
+                    ];
+                    $classePrioridade = $corPrioridade[$episodio->prioridade] ?? 'secondary';
+                @endphp
+                <span class="badge bg-{{ $classePrioridade }} ms-3 fs-12 shadow-sm pulse-{{ $classePrioridade }}">
+                    <i class="ri-alert-fill me-1"></i> PRIORIDADE: {{ strtoupper($episodio->prioridade) }}
+                </span>
             </h4>
             <div class="page-title-right d-flex gap-2">
                 <a href="{{ route('episodios.index') }}" class="btn btn-light btn-label shadow-sm">
@@ -41,10 +55,13 @@
         <div class="card shadow-sm border-0 overflow-hidden mb-4">
             <div class="bg-primary-subtle" style="height: 60px;"></div>
             <div class="card-body text-center" style="margin-top: -30px;">
-                <div class="avatar-md mx-auto mb-3">
-                    <div class="avatar-title bg-white text-primary rounded-circle fs-24 shadow-sm border border-2 border-primary">
+                <div class="avatar-md mx-auto mb-3 position-relative">
+                    <div class="avatar-title bg-white text-primary rounded-circle fs-24 shadow-sm border border-2 border-{{ $classePrioridade }}">
                         {{ strtoupper(substr($episodio->paciente->nome_completo, 0, 1)) }}
                     </div>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-{{ $classePrioridade }} border border-white">
+                        <i class="ri-error-warning-line"></i>
+                    </span>
                 </div>
                 <h6 class="mb-1 fw-bold text-dark">{{ $episodio->paciente->nome_completo }}</h6>
                 <div class="d-flex justify-content-center gap-2 mb-3">
@@ -77,9 +94,10 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mt-4">
+        <div class="card shadow-sm border-0 border-{{ $classePrioridade }} mt-4">
             <div class="card-header bg-light-subtle d-flex align-items-center justify-content-between">
                 <h6 class="card-title mb-0 fw-bold"><i class="ri-pulse-line me-2 text-danger"></i>Sinais Vitais</h6>
+                <span class="badge bg-{{ $classePrioridade }} text-uppercase">{{ $episodio->prioridade }}</span>
                 <span class="badge bg-primary-subtle text-primary">Triagem</span>
             </div>
             <div class="card-body">
@@ -923,5 +941,15 @@ $(document).ready(function() {
 /* Scrollbar fina para a lista */
 .tab-content::-webkit-scrollbar { width: 4px; }
 .tab-content::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 10px; }
+.pulse-danger {
+    animation: pulse-red 2s infinite;
+    box-shadow: 0 0 0 0 rgba(240, 101, 72, 0.7);
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(240, 101, 72, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(240, 101, 72, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(240, 101, 72, 0); }
+}
 </style>
 @endpush

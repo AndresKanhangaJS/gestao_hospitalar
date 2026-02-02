@@ -29,7 +29,8 @@ class Episodio extends Model
         'peso',
         'altura',
         'frequencia_cardiaca',
-        'saturacao'
+        'saturacao',
+        'prioridade',
     ];
 
     protected $casts = [
