@@ -51,6 +51,7 @@ class PermissionSeeder extends Seeder
             "pacientes.registar",
             "pacientes.editar",
             "pacientes.eliminar",
+            "pacientes.triagem",
             "pacientes.informacoes_medicas",
             //
 

@@ -18,7 +18,7 @@ class EpisodioController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Episodio::with(['paciente', 'medico', 'tipoAtendimento']);
+        $query = Episodio::with(['paciente', 'medico', 'profissionalTriagem', 'tipoAtendimento']);
 
         // Filtro por Nome do Paciente ou Documento (Relacionamento)
         $query->when($request->search, function ($q, $search) {
@@ -80,26 +80,89 @@ class EpisodioController extends Controller
         return view('episodios.registar', compact('paciente', 'medicos', 'tipos'));
     }
 
-    public function store(Request $request): JsonResponse
+    // FLUXO DE ABERTURA DE EPISÓDIO COMPLETO
+    // public function store(Request $request): JsonResponse
+    // {
+    //     try {
+    //         $validado = $request->validate([
+    //             'paciente_id'         => 'required|exists:pacientes,id',
+    //             'medico_id'           => 'required|exists:medicos,id',
+    //             'tipo_atendimento_id' => 'required|exists:tipos_atendimentos,id',
+    //             'prioridade'          => 'required|string',
+    //             // Validação dos novos dados de triagem
+    //             'pa_sistolica'        => 'nullable|string|max:10',
+    //             'pa_diastolica'       => 'nullable|string|max:10',
+    //             'temperatura'         => 'nullable|numeric|between:30,45',
+    //             'peso'                => 'nullable|numeric|between:0,500',
+    //             'altura'              => 'nullable|numeric|between:0,3',
+    //             'frequencia_cardiaca' => 'nullable|integer',
+    //             'saturacao'           => 'nullable|integer|between:0,100',
+    //         ], [
+    //             'required' => 'O campo :attribute é obrigatório.',
+    //             'exists'   => 'O valor selecionado para :attribute é inválido.',
+    //             'numeric'  => 'O campo :attribute deve ser um número.',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         // Gerar código único: EP-2026-0001
+    //         $ano = date('Y');
+    //         $ultimo = Episodio::whereYear('created_at', $ano)->latest()->first();
+    //         $sequencia = $ultimo ? (int) substr($ultimo->codigo_atendimento, -4) + 1 : 1;
+    //         $codigo = "EP-{$ano}-" . str_pad($sequencia, 4, '0', STR_PAD_LEFT);
+
+    //         $episodio = Episodio::create([
+    //             'paciente_id'         => $validado['paciente_id'],
+    //             'medico_id'           => $validado['medico_id'],
+    //             'tipo_atendimento_id' => $validado['tipo_atendimento_id'],
+    //             'user_id_criacao'     => auth()->id(),
+    //             'codigo_atendimento'  => $codigo,
+    //             'data_abertura'       => now(),
+    //             'situacao'            => 'Aberto',
+    //             'status'              => 'activo',
+    //             'prioridade'          => $request->prioridade ?? null,
+    //             // Dados de triagem
+    //             'pa_sistolica'        => $request->pa_sistolica,
+    //             'pa_diastolica'       => $request->pa_diastolica,
+    //             'temperatura'         => $request->temperatura,
+    //             'peso'                => $request->peso,
+    //             'altura'              => $request->altura,
+    //             'frequencia_cardiaca' => $request->frequencia_cardiaca,
+    //             'saturacao'           => $request->saturacao,
+    //         ]);
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Episódio de atendimento aberto com sucesso!',
+    //             'id'      => codificar($episodio->id)
+    //         ], 201);
+
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'success' => false,
+    //             'errors'  => $e->errors()
+    //         ], 422);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erro interno ao abrir episódio: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // FLUXO SIMPLIFICADO DE ABERTURA DE EPISÓDIO (APENAS PACIENTE E TIPO DE ATENDIMENTO)
+    public function store(Request $request)
     {
         try {
             $validado = $request->validate([
-                'paciente_id'         => 'required|exists:pacientes,id',
-                'medico_id'           => 'required|exists:medicos,id',
+                'paciente_id' => 'required|exists:pacientes,id',
                 'tipo_atendimento_id' => 'required|exists:tipos_atendimentos,id',
-                'prioridade'          => 'required|string',
-                // Validação dos novos dados de triagem
-                'pa_sistolica'        => 'nullable|string|max:10',
-                'pa_diastolica'       => 'nullable|string|max:10',
-                'temperatura'         => 'nullable|numeric|between:30,45',
-                'peso'                => 'nullable|numeric|between:0,500',
-                'altura'              => 'nullable|numeric|between:0,3',
-                'frequencia_cardiaca' => 'nullable|integer',
-                'saturacao'           => 'nullable|integer|between:0,100',
             ], [
                 'required' => 'O campo :attribute é obrigatório.',
-                'exists'   => 'O valor selecionado para :attribute é inválido.',
-                'numeric'  => 'O campo :attribute deve ser um número.',
             ]);
 
             DB::beginTransaction();
@@ -111,30 +174,19 @@ class EpisodioController extends Controller
             $codigo = "EP-{$ano}-" . str_pad($sequencia, 4, '0', STR_PAD_LEFT);
 
             $episodio = Episodio::create([
-                'paciente_id'         => $validado['paciente_id'],
-                'medico_id'           => $validado['medico_id'],
+                'paciente_id' => $validado['paciente_id'],
                 'tipo_atendimento_id' => $validado['tipo_atendimento_id'],
-                'user_id_criacao'     => auth()->id(),
-                'codigo_atendimento'  => $codigo,
-                'data_abertura'       => now(),
-                'situacao'            => 'Aberto',
-                'status'              => 'activo',
-                'prioridade'          => $request->prioridade ?? null,
-                // Dados de triagem
-                'pa_sistolica'        => $request->pa_sistolica,
-                'pa_diastolica'       => $request->pa_diastolica,
-                'temperatura'         => $request->temperatura,
-                'peso'                => $request->peso,
-                'altura'              => $request->altura,
-                'frequencia_cardiaca' => $request->frequencia_cardiaca,
-                'saturacao'           => $request->saturacao,
+                'codigo_atendimento' => $codigo,
+                'situacao' => 'Aguardando Triagem', // <--- Estado inicial
+                'user_id_criacao' => auth()->id(),
+                'data_abertura' => now(),
             ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Episódio de atendimento aberto com sucesso!',
+                'message' => 'Paciente encaminhado para triagem!',
                 'id'      => codificar($episodio->id)
             ], 201);
 
@@ -148,14 +200,77 @@ class EpisodioController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Erro interno ao abrir episódio: ' . $e->getMessage()
+                'message' => 'Erro interno ao abrir atendimento/episódio: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function triagem(Request $request, $id)
+    {
+        try {
+            // Decodificar o ID se estiveres a usar o helper de codificação
+            // $id = descodificar($id);
+
+            $validado = $request->validate([
+                'pa_sistolica'        => 'required|string',
+                'pa_diastolica'       => 'required|string',
+                'temperatura'         => 'nullable|numeric',
+                'peso'                => 'nullable|numeric',
+                'altura'              => 'nullable|numeric',
+                'frequencia_cardiaca' => 'nullable|integer',
+                'saturacao'           => 'nullable|integer',
+                'medico_id'           => 'required|exists:medicos,id',
+                'observacoes_triagem' => 'nullable|string',
+                'prioridade'          => 'required|string',
+            ], [
+                'required' => 'O campo :attribute é obrigatório.',
+                'exists'   => 'O valor selecionado para :attribute é inválido.',
+                'numeric'  => 'O campo :attribute deve ser um número.',
+            ]);
+
+            DB::beginTransaction();
+
+            $episodio = Episodio::findOrFail($id);
+
+            // Atualizar os dados do episódio
+            $episodio->update([
+                'pa_sistolica'        => $validado['pa_sistolica'],
+                'pa_diastolica'       => $validado['pa_diastolica'],
+                'temperatura'         => $validado['temperatura'],
+                'peso'                => $validado['peso'],
+                'altura'              => $validado['altura'],
+                'frequencia_cardiaca' => $validado['frequencia_cardiaca'],
+                'saturacao'           => $validado['saturacao'],
+                'medico_id'           => $validado['medico_id'],
+                'observacoes_triagem' => $validado['observacoes_triagem'],
+                'prioridade'          => $validado['prioridade'],
+                'situacao'            => 'Aguardando Atendimento', // Avança para o próximo estado
+                'user_id_triagem'     => auth()->id(),
+                'data_triagem'        => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Triagem realizada com sucesso! Paciente encaminhado ao médico.',
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao salvar triagem: ' . $e->getMessage()
             ], 500);
         }
     }
 
     public function show(Episodio $episodio)
     {
-        $episodio->load(['paciente', 'medico', 'criador', 'usuarioFechamento' ,'notasClinicas.criador']);
+        $episodio->load(['paciente', 'medico', 'profissionalTriagem', 'criador', 'usuarioFechamento' ,'notasClinicas.criador']);
         $categoriasExames = ExameCategoria::with(['exames' => function($q) {
             $q->where('status', 'activo')->orderBy('nome');
         }])->get();

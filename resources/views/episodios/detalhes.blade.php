@@ -5,7 +5,7 @@
 @section('content')
 @php
     $isMedicoResponsavel = (auth()->user()->hasRole('Médico') && auth()->user()->medico && auth()->user()->medico->id == $episodio->medico_id);
-    $podeEditar = ($episodio->situacao == 'Aberto' && $isMedicoResponsavel);
+    $podeEditar = ($episodio->situacao == 'Aguardando Atendimento' && $isMedicoResponsavel);
 @endphp
 
 <div class="row">
@@ -18,7 +18,7 @@
                     $corPrioridade = [
                         'Emergente'      => 'danger',
                         'Muito Urgente'  => 'warning',
-                        'Urgente'        => 'info', // ou uma cor customizada para Amarelo
+                        'Urgente'        => 'info',
                         'Pouco Urgente'  => 'success',
                         'Não Urgente'    => 'primary'
                     ];
@@ -94,71 +94,75 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 border-{{ $classePrioridade }} mt-4">
+        <div class="card shadow-sm border-0 border-start border-4 border-{{ $classePrioridade }} mt-4">
             <div class="card-header bg-light-subtle d-flex align-items-center justify-content-between">
                 <h6 class="card-title mb-0 fw-bold"><i class="ri-pulse-line me-2 text-danger"></i>Sinais Vitais</h6>
                 <span class="badge bg-{{ $classePrioridade }} text-uppercase">{{ $episodio->prioridade }}</span>
-                <span class="badge bg-primary-subtle text-primary">Triagem</span>
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-12 border-bottom pb-2">
-                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Pressão Arterial</label>
-                        <div class="d-flex align-items-center">
-                            <i class="ri-heart-3-fill text-danger me-2 fs-18"></i>
-                            <span class="fw-bold text-dark fs-15">
-                                {{ $episodio->pa_sistolica ?? '--' }} / {{ $episodio->pa_diastolica ?? '--' }}
-                                <small class="text-muted fw-normal">mmHg</small>
-                            </span>
-                        </div>
+                    <div class="col-6 border-bottom pb-2">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">P. Arterial</label>
+                        <span class="fw-bold text-dark">{{ $episodio->pa_sistolica ?? '--' }}/{{ $episodio->pa_diastolica ?? '--' }} <small class="text-muted">mmHg</small></span>
+                    </div>
+                    <div class="col-6 border-bottom pb-2">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Frequência</label>
+                        <span class="fw-bold text-dark">{{ $episodio->frequencia_cardiaca ?? '--' }} <small class="text-muted">BPM</small></span>
                     </div>
 
                     <div class="col-6 border-end">
                         <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Temperatura</label>
-                        <div class="d-flex align-items-center">
-                            <i class="ri-temp-hot-line text-warning me-2 fs-18"></i>
-                            <span class="fw-bold text-dark">{{ $episodio->temperatura ?? '--' }}°C</span>
-                        </div>
+                        <span class="fw-bold text-dark">{{ $episodio->temperatura ?? '--' }}°C</span>
                     </div>
                     <div class="col-6">
-                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Frequência</label>
-                        <div class="d-flex align-items-center">
-                            <i class="ri-rest-time-line text-info me-2 fs-18"></i>
-                            <span class="fw-bold text-dark">{{ $episodio->frequencia_cardiaca ?? '--' }} <small>BPM</small></span>
-                        </div>
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Saturação</label>
+                        <span class="badge {{ ($episodio->saturacao < 95 && $episodio->saturacao != null) ? 'bg-danger' : 'bg-info' }}">
+                            {{ $episodio->saturacao ?? '--' }}%
+                        </span>
                     </div>
 
-                    <div class="col-6 border-end border-top pt-2">
-                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Peso</label>
-                        <span class="fw-bold text-dark">{{ $episodio->peso ?? '--' }} kg</span>
+                    <div class="col-6 border-top pt-2 border-end">
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Peso / Altura</label>
+                        <span class="text-dark fw-medium">{{ $episodio->peso ?? '--' }}kg | {{ $episodio->altura ?? '--' }}m</span>
                     </div>
                     <div class="col-6 border-top pt-2">
-                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Altura</label>
-                        <span class="fw-bold text-dark">{{ $episodio->altura ?? '--' }} m</span>
+                        <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">IMC</label>
+                        @if($episodio->peso && $episodio->altura)
+                            @php
+                                $imc = $episodio->peso / ($episodio->altura * $episodio->altura);
+                                $corImc = $imc > 25 ? 'text-danger' : ($imc < 18.5 ? 'text-warning' : 'text-success');
+                            @endphp
+                            <span class="fw-bold {{ $corImc }}">{{ number_format($imc, 1) }}</span>
+                        @else
+                            <span class="text-muted">--</span>
+                        @endif
                     </div>
+                </div>
+            </div>
+            <div class="card-header bg-light-subtle">
+                <h6 class="card-title mb-0 fw-bold"><i class="ri-user-voice-line me-2 text-primary"></i>Registo da Triagem</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Realizada por</label>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-medium text-dark">{{ $episodio->profissionalTriagem->name ?? 'Não identificado' }}</span>
+                    </div>
+                </div>
 
-                    <div class="col-12 border-top pt-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Saturação (SpO2)</label>
-                                <span class="badge {{ ($episodio->saturacao < 95 && $episodio->saturacao != null) ? 'bg-danger' : 'bg-info' }} fs-12">
-                                    {{ $episodio->saturacao ?? '--' }}%
-                                </span>
-                            </div>
-                            <div class="text-end">
-                                <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">IMC</label>
-                                @if($episodio->peso && $episodio->altura)
-                                    @php
-                                        $imc = $episodio->peso / ($episodio->altura * $episodio->altura);
-                                        $corImc = $imc > 25 ? 'text-danger' : ($imc < 18.5 ? 'text-warning' : 'text-success');
-                                    @endphp
-                                    <span class="fw-bold {{ $corImc }}">{{ number_format($imc, 1) }}</span>
-                                @else
-                                    <span class="text-muted">--</span>
-                                @endif
-                            </div>
-                        </div>
+                <div class="mb-3">
+                    <label class="text-muted fs-11 text-uppercase fw-bold mb-1 d-block">Data e Hora</label>
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="ri-calendar-event-line me-2"></i>
+                        <span>{{ $episodio->data_triagem ? \Carbon\Carbon::parse($episodio->data_triagem)->format('d/m/Y H:i') : '--/--/--' }}</span>
                     </div>
+                </div>
+
+                <div class="p-2 bg-light rounded border-start border-3">
+                    <label class="text-muted fs-10 text-uppercase fw-bold mb-1 d-block">Observações da Triagem</label>
+                    <p class="mb-0 fs-12 text-dark italic" style="line-height: 1.3;">
+                        "{{ $episodio->observacoes_triagem ?? 'Nenhuma observação registada.' }}"
+                    </p>
                 </div>
             </div>
         </div>
@@ -181,7 +185,7 @@
                         <span class="badge {{ $episodio->status == 'activo' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} px-2 py-1">
                             {{ strtoupper($episodio->status) }}
                         </span>
-                        <span class="badge {{ $episodio->situacao == 'Aberto' ? 'bg-success' : 'bg-secondary' }} px-2 py-1">
+                        <span class="badge {{ $episodio->situacao == 'Aguardando Atendimento' ? 'bg-success' : 'bg-secondary' }} px-2 py-1">
                             {{ strtoupper($episodio->situacao) }}
                         </span>
                     </div>

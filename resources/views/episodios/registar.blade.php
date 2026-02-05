@@ -44,7 +44,7 @@
                             <i class="ri-user-search-line me-2 fs-20"></i> Identificação do Paciente
                         </h5>
                         <div class="row g-4">
-                            <div class="col-lg-8">
+                            <div class="col-lg-5">
                                 <label class="form-label fw-semibold text-muted small">NOME COMPLETO</label>
                                 <input type="text" class="form-control border-light bg-light-subtle fw-bold" value="{{ $paciente->nome_completo }}" readonly>
                             </div>
@@ -52,10 +52,19 @@
                                 <label class="form-label fw-semibold text-muted small">NÚMERO DO DOCUMENTO ({{ $paciente->tipo_documento }})</label>
                                 <input type="text" class="form-control border-light bg-light-subtle fw-bold" value="{{ $paciente->numero_documento }}" readonly>
                             </div>
+                            <div class="col-lg-3">
+                                <label for="tipo_atendimento_id" class="form-label fw-semibold text-muted small">TIPO DE ATENDIMENTO <span class="text-danger">*</span></label>
+                                <select class="form-select border-light bg-light" name="tipo_atendimento_id" id="tipo_atendimento_id" required>
+                                    <option value="" selected disabled>Selecione o tipo...</option>
+                                    @foreach($tipos as $tipo)
+                                        <option value="{{ $tipo->id }}">{{ $tipo->nome }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-5">
+                    {{-- <div class="mb-5">
                         <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
                             <i class="ri-pulse-line me-2 fs-20"></i> Triagem e Sinais Vitais
                         </h5>
@@ -105,9 +114,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
-                    <div class="mb-2">
+                    {{-- <div class="mb-2">
                         <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
                             <i class="ri-stethoscope-line me-2 fs-20"></i> Dados da Consulta / Atendimento
                         </h5>
@@ -120,15 +129,6 @@
                                         value="{{ now()->format('d/m/Y H:i') }}" readonly disabled>
                                     <input type="hidden" name="data_abertura" value="{{ now() }}">
                                 </div>
-                            </div>
-                            <div class="col-lg-2">
-                                <label for="tipo_atendimento_id" class="form-label fw-semibold text-muted small">TIPO DE ATENDIMENTO <span class="text-danger">*</span></label>
-                                <select class="form-select border-light bg-light" name="tipo_atendimento_id" id="tipo_atendimento_id" required>
-                                    <option value="" selected disabled>Selecione o tipo...</option>
-                                    @foreach($tipos as $tipo)
-                                        <option value="{{ $tipo->id }}">{{ $tipo->nome }}</option>
-                                    @endforeach
-                                </select>
                             </div>
                             <div class="col-lg-2">
                                 <label for="prioridade" class="form-label fw-semibold text-muted small">PRIORIDADE <span class="text-danger">*</span></label>
@@ -151,7 +151,7 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <div class="card-footer bg-light-subtle hstack gap-2 justify-content-end p-4 border-top">
@@ -194,21 +194,21 @@ $(document).ready(function() {
                     icon: 'success',
                     title: 'Atendimento Iniciado!',
                     text: response.message,
-                    showCancelButton: true,
-                    confirmButtonText: '<i class="ri-eye-line me-1"></i> Ver Episódio',
-                    cancelButtonText: '<i class="ri-list-unordered me-1"></i> Ver Todos',
+                    showCancelButton: false,
+                    confirmButtonText: '<i class="ri-list-unordered me-1"></i> Ver Todos Atendimentos',
+                    cancelButtonText: '<i class="ri-eye-line me-1"></i> Ver Episódio',
                     confirmButtonColor: '#3577f1', // Azul (Informação/Ação)
                     cancelButtonColor: '#0ab39c',  // Verde (Listagem/Sucesso)
                     allowOutsideClick: false,
                     allowEscapeKey: false
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Redireciona para os detalhes do episódio criado
-                        let url = "{{ route('episodios.show', ':id') }}";
-                        window.location.href = url.replace(':id', response.id);
-                    } else {
                         // Vai para a listagem geral de episódios
                         window.location.href = "{{ route('episodios.index') }}";
+                    } else {
+                        // Redireciona para os detalhes do episódio criado
+                        // let url = "{{ route('episodios.show', ':id') }}";
+                        // window.location.href = url.replace(':id', response.id);
                     }
                 });
             },

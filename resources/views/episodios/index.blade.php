@@ -58,46 +58,17 @@
                         <div class="col-xxl-2 col-sm-6">
                             <select class="form-select bg-white border-light" name="situacao">
                                 <option value="">Situação (Todas)</option>
-                                <option value="Aberto" {{ request('situacao') == 'Aberto' ? 'selected' : '' }}>🟢 Aberto</option>
+                                <option value="Aguardando Triagem" {{ request('situacao') == 'Aguardando Triagem' ? 'selected' : '' }}>🟡 Aguardando Triagem</option>
+                                <option value="Aguardando Atendimento" {{ request('situacao') == 'Aguardando Atendimento' ? 'selected' : '' }}>🔵 Aguardando Atendimento</option>
                                 <option value="Fechado" {{ request('situacao') == 'Fechado' ? 'selected' : '' }}>🔴 Fechado</option>
                             </select>
                         </div>
 
-                        <div class="col-xxl-2 col-sm-6">
-                            <select class="form-select bg-white border-light" name="tipo_id">
-                                <option value="">Tipo Atendimento</option>
-                                @foreach($tiposAtendimento as $tipo)
-                                    <option value="{{ $tipo->id }}" {{ request('tipo_id') == $tipo->id ? 'selected' : '' }}>
-                                        {{ $tipo->nome }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-xxl-4 col-sm-6">
-                            <select class="form-select bg-white border-light" name="medico_id">
-                                <option value="">Médico Responsável</option>
-                                @foreach($medicos as $medico)
-                                    <option value="{{ $medico->id }}" {{ request('medico_id') == $medico->id ? 'selected' : '' }}>
-                                        {{ $medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $medico->nome_completo }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-xxl-2 col-sm-6">
-                            <select class="form-select bg-white border-light" name="status">
-                                <option value="">Status Registro</option>
-                                <option value="activo" {{ request('status') == 'activo' ? 'selected' : '' }}>Activo</option>
-                                <option value="inactivo" {{ request('status') == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
-                            </select>
-                        </div>
-
-                        <div class="col-xxl-6 col-sm-12 d-flex gap-2 justify-content-end align-items-end">
-                            <button type="submit" class="btn btn-primary px-4 shadow-sm flex-grow-1 flex-md-grow-0">
+                        <div class="col-xxl-2 col-sm-6 d-flex gap-2 justify-content-end align-items-end">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm flex-grow-1">
                                 <i class="ri-equalizer-fill me-1 align-bottom"></i>Filtrar
                             </button>
-                            <a href="{{ route('episodios.index') }}" class="btn btn-soft-danger px-4 shadow-sm" title="Limpar Tudo">
+                            <a href="{{ route('episodios.index') }}" class="btn btn-soft-danger px-4 shadow-sm">
                                 <i class="ri-refresh-line"></i>
                             </a>
                         </div>
@@ -113,7 +84,7 @@
                                 <th scope="col" class="ps-4">Paciente</th>
                                 <th scope="col">Data/Hora</th>
                                 <th scope="col">Tipo Atendimento</th>
-                                <th scope="col">Médico</th>
+                                <th scope="col">Médico / Estado</th>
                                 <th scope="col">Status</th>
                                 <th scope="col" class="text-center">Ações</th>
                             </tr>
@@ -148,11 +119,31 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="ri-user-star-line me-1 text-muted fs-16"></i>
-                                        <span class="text-muted fw-medium">{{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo ?? 'Não Atribuído' }}</span>
-                                    </div>
+                                    @if($episodio->situacao == 'Aguardando Triagem')
+                                        <div class="d-flex align-items-center text-warning fw-medium">
+                                            <i class="ri-loader-2-line ri-spin me-1 fs-16"></i>
+                                            <span>Pendente na Triagem</span>
+                                        </div>
+                                    @else
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-medium text-dark">
+                                                <i class="ri-user-star-line me-1 text-primary"></i>
+                                                {{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo }}
+                                            </span>
+                                            <small class="text-muted ps-4">Encaminhado por: {{ $episodio->profissionalTriagem->name ?? 'Sistema' }}</small>
+                                        </div>
+                                    @endif
                                 </td>
+                                {{-- <td>
+                                    @if($episodio->medico)
+                                        <span class="text-muted fw-medium">
+                                            <i class="ri-user-star-line me-1 text-primary"></i>
+                                            {{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-soft-warning text-warning">Aguardando Triagem</span>
+                                    @endif
+                                </td> --}}
                                 <td>
                                     <span class="badge {{ $episodio->status == 'activo' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} text-uppercase">
                                         {{ $episodio->status }}
@@ -163,17 +154,228 @@
                                         <a href="{{ route('episodios.show', $episodio) }}" class="btn btn-sm btn-soft-info" title="Ver detalhes">
                                             <i class="ri-eye-fill"></i>
                                         </a>
-                                        {{-- <a href="" class="btn btn-sm btn-soft-primary" title="Editar">
-                                            <i class="ri-pencil-fill"></i>
-                                        </a> --}}
+                                        @if($episodio->situacao == 'Aguardando Triagem')
+                                            @can('pacientes.triagem')
+                                                <button type="button" class="btn btn-sm btn-soft-success" data-bs-toggle="modal" data-bs-target="#modalTriagem{{ $episodio->id }}">
+                                                    <i class="ri-heart-pulse-line me-1"></i>Fazer Triagem
+                                                </button>
+                                            @endcan
+                                        @else
+                                            <button type="button" class="btn btn-sm btn-soft-primary" data-bs-toggle="modal" data-bs-target="#modalVerTriagem{{ $episodio->id }}">
+                                                <i class="ri-file-list-3-line me-1"></i>Dados da Triagem
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
+
+                            {{-- FAZER TRIAGEM --}}
+                            <div class="modal fade" id="modalTriagem{{ $episodio->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg">
+                                        <div class="modal-header bg-success py-3">
+                                            <h5 class="modal-title text-white fw-bold">
+                                                <i class="ri-pulse-line me-2"></i> Triagem Clínica
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <form action="{{ route('episodios.triagem', $episodio->id) }}" method="POST" class="form-triagem">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="modal-body p-4">
+
+                                                <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center" style="font-size: 14px;">
+                                                    <i class="ri-heart-pulse-line me-2 fs-20"></i> Sinais Vitais ({{ $episodio->paciente->nome_completo }})
+                                                </h5>
+
+                                                <div class="row g-3">
+                                                    <div class="col-lg-6 col-md-6">
+                                                        <label class="form-label fw-semibold text-muted small">PRESSÃO ARTERIAL (PA)</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text border-light bg-light"><i class="ri-heart-3-line text-danger"></i></span>
+                                                            <input type="text" name="pa_sistolica" class="form-control border-light bg-light" placeholder="120" required>
+                                                            <span class="input-group-text border-light bg-light">/</span>
+                                                            <input type="text" name="pa_diastolica" class="form-control border-light bg-light" placeholder="80" required>
+                                                            <span class="input-group-text border-light bg-light">mmHg</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-3 col-md-6">
+                                                        <label class="form-label fw-semibold text-muted small">TEMPERATURA</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text border-light bg-light"><i class="ri-temp-hot-line text-warning"></i></span>
+                                                            <input type="number" step="0.1" name="temperatura" class="form-control border-light bg-light" placeholder="36.5">
+                                                            <span class="input-group-text border-light bg-light">°C</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-3 col-md-6">
+                                                        <label class="form-label fw-semibold text-muted small">PESO</label>
+                                                        <div class="input-group">
+                                                            <input type="number" step="0.01" name="peso" class="form-control border-light bg-light" placeholder="70.0">
+                                                            <span class="input-group-text border-light bg-light">kg</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-3 col-md-6">
+                                                        <label class="form-label fw-semibold text-muted small">ALTURA</label>
+                                                        <div class="input-group">
+                                                            <input type="number" step="0.01" name="altura" class="form-control border-light bg-light" placeholder="1.75">
+                                                            <span class="input-group-text border-light bg-light">m</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <label class="form-label fw-semibold text-muted small">FREQ. CARDÍACA</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text border-light bg-light"><i class="ri-pulse-line text-info"></i></span>
+                                                            <input type="number" name="frequencia_cardiaca" class="form-control border-light bg-light" placeholder="BPM">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-5 col-md-12">
+                                                        <label class="form-label fw-semibold text-muted small">SATURAÇÃO</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text border-light bg-light"><i class="ri-rest-time-line text-info"></i></span>
+                                                            <input type="number" name="saturacao" class="form-control border-light bg-light" placeholder="SpO2 %">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <h5 class="card-title text-primary border-bottom pb-2 mt-4 mb-3 d-flex align-items-center" style="font-size: 13px;">
+                                                    <i class="ri-user-follow-line me-2"></i> DESTINO E ENCAMINHAMENTO
+                                                </h5>
+
+                                                <div class="row g-3">
+                                                    <div class="col-md-8">
+                                                        <label class="form-label fw-bold">Médico Responsável <span class="text-danger">*</span></label>
+                                                        <select class="form-select border-light bg-light" name="medico_id" required>
+                                                            <option value="">Selecione o médico para o atendimento...</option>
+                                                            @foreach($medicos as $medico)
+                                                                <option value="{{ $medico->id }}">
+                                                                    {{ $medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $medico->nome_completo }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label for="prioridade" class="form-label fw-semibold text-muted small">PRIORIDADE <span class="text-danger">*</span></label>
+                                                        <select class="form-select border-light bg-light fw-bold" name="prioridade" id="prioridade" required onchange="updatePriorityColor(this)">
+                                                            <option value="" selected disabled>Classificar...</option>
+                                                            <option value="Emergente" data-color="#f06548">🔴 Emergente</option>
+                                                            <option value="Muito Urgente" data-color="#ffbe0b">🟠 Muito Urgente</option>
+                                                            <option value="Urgente" data-color="#f7cc53">🟡 Urgente</option>
+                                                            <option value="Pouco Urgente" data-color="#45cb85">🟢 Pouco Urgente</option>
+                                                            <option value="Não Urgente" data-color="#3577f1">🔵 Não Urgente</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <label class="form-label fw-bold">Queixas / Observações de Triagem</label>
+                                                        <textarea class="form-control border-light bg-light" name="observacoes_triagem" rows="3" placeholder="Descreva as queixas principais do paciente..."></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer bg-light">
+                                                <button type="button" class="btn btn-link link-danger" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-success btn-label shadow-sm">
+                                                    <i class="ri-check-double-line label-icon align-middle fs-16 me-2"></i> Concluir e Encaminhar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if($episodio->situacao !== 'Aguardando Triagem')
+                            {{-- DADOS DA TRIAGEM --}}
+                            <div class="modal fade" id="modalVerTriagem{{ $episodio->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg">
+                                        <div class="modal-header py-3">
+                                            <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <div class="modal-body p-4">
+                                            <div class="text-center mb-4">
+                                                <h5 class="fw-bold mb-1">{{ $episodio->paciente->nome_completo }}</h5>
+                                                <span class="badge bg-primary-subtle text-primary rounded-pill">Resumo da Triagem</span>
+                                            </div>
+
+                                            <div class="row g-4 text-center mb-4">
+                                                <div class="col-4">
+                                                    <p class="text-muted mb-1 small text-uppercase">P. Arterial</p>
+                                                    <h5 class="fw-bold mb-0 text-danger">{{ $episodio->pa_sistolica }}/{{ $episodio->pa_diastolica }}</h5>
+                                                    <small class="text-muted">mmHg</small>
+                                                </div>
+                                                <div class="col-4 border-start border-end">
+                                                    <p class="text-muted mb-1 small text-uppercase">Temperatura</p>
+                                                    <h5 class="fw-bold mb-0 text-warning">{{ $episodio->temperatura }}°C</h5>
+                                                </div>
+                                                <div class="col-4">
+                                                    <p class="text-muted mb-1 small text-uppercase">Freq. Card.</p>
+                                                    <h5 class="fw-bold mb-0 text-info">{{ $episodio->frequencia_cardiaca ?? '--' }}</h5>
+                                                    <small class="text-muted">BPM</small>
+                                                </div>
+                                            </div>
+
+                                            <hr class="text-muted opacity-10">
+
+                                            <div class="row g-3 mb-4">
+                                                <div class="col-6">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="ri- droplet-fill text-primary me-2"></i>
+                                                        <div>
+                                                            <small class="text-muted d-block">Saturação</small>
+                                                            <span class="fw-bold">{{ $episodio->saturacao }}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="ri-scales-3-line text-primary me-2"></i>
+                                                        <div>
+                                                            <small class="text-muted d-block">Peso / Altura</small>
+                                                            <span class="fw-bold">{{ $episodio->peso }}kg / {{ $episodio->altura }}m</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3 bg-light rounded-3 mb-4">
+                                                <small class="text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Observações</small>
+                                                <p class="mb-0 text-dark small" style="line-height: 1.4;">
+                                                    {{ $episodio->observacoes_triagem ?? 'Sem observações registadas.' }}
+                                                </p>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-end border-top pt-3">
+                                                <div>
+                                                    <small class="text-muted d-block small">Responsável:</small>
+                                                    <span class="fw-medium">{{ $episodio->profissionalTriagem->name ?? 'Sistema' }}</span>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted d-block small">Data de Triagem:</small>
+                                                    <small class=""><i class="ri-time-line me-1 fs-11"></i>{{ $episodio->data_triagem }}</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="border-top pt-3">
+                                                <small class="text-muted d-block small">Encaminhado para:</small>
+                                                <span class="fw-bold text-primary">{{ $episodio->medico->nome_completo }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
                             @empty
                             <tr>
                                 <td colspan="6" class="text-center py-5">
                                     <lord-icon src="https://cdn.lordicon.com/vlynuwvu.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
-                                    <h5 class="mt-2 text-muted">Nenhum episódio encontrado para os filtros aplicados.</h5>
+                                    <h5 class="mt-2 text-muted">Nenhum episódio encontrado.</h5>
                                 </td>
                             </tr>
                             @endforelse
@@ -192,3 +394,87 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Captura o submit de qualquer form de triagem dentro da tabela
+    $('.form-triagem').on('submit', function(e) {
+        e.preventDefault();
+
+        const form = $(this);
+        const btnSubmit = form.find('button[type="submit"]');
+        const modal = form.closest('.modal'); // Referência ao modal aberto
+        const formData = new FormData(this);
+
+        // Limpar erros anteriores
+        form.find('.form-control, .form-select').removeClass('is-invalid');
+        form.find('.text-danger.small, .invalid-feedback').remove();
+
+        // Feedback visual
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Gravando...');
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(response) {
+                // Fechar o modal
+                modal.modal('hide');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Triagem Concluída!',
+                    text: response.message,
+                    confirmButtonColor: '#0ab39c',
+                }).then(() => {
+                    // Recarregar a página para atualizar a tabela e o status
+                    window.location.reload();
+                });
+            },
+            error: function(xhr) {
+                btnSubmit.prop('disabled', false).html('<i class="ri-check-double-line label-icon align-middle fs-16 me-2"></i> Concluir e Encaminhar');
+
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    Object.keys(errors).forEach(key => {
+                        const input = form.find(`[name="${key}"]`);
+                        input.addClass('is-invalid');
+
+                        // Posicionamento inteligente do erro
+                        if (input.parent().hasClass('input-group')) {
+                            input.parent().after(`<div class="text-danger small mt-1">${errors[key][0]}</div>`);
+                        } else {
+                            input.after(`<div class="invalid-feedback">${errors[key][0]}</div>`);
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro!',
+                        text: xhr.responseJSON.message || 'Ocorreu um erro ao salvar a triagem.'
+                    });
+                }
+            }
+        });
+    });
+});
+
+function updatePriorityColor(select) {
+    const selectedOption = select.options[select.selectedIndex];
+    const color = selectedOption.getAttribute('data-color');
+
+    // Altera a cor do texto e borda do select para dar destaque
+    if (color) {
+        select.style.borderColor = color;
+        select.style.color = color;
+    } else {
+        select.style.borderColor = "#ced4da";
+        select.style.color = "#212529";
+    }
+}
+</script>
+@endpush

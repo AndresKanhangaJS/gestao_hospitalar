@@ -21,6 +21,7 @@ Route::prefix('episodios')->group(function () {
     Route::get('/', [EpisodioController::class, 'index'])->name('episodios.index');
     Route::get('/novo/{paciente}', [EpisodioController::class, 'create'])->name('episodios.create');
     Route::post('/store', [EpisodioController::class, 'store'])->name('episodios.store');
+    Route::put('/triagem/{episodio}', [EpisodioController::class, 'triagem'])->name('episodios.triagem');
     Route::get('/{episodio}/detalhes', [EpisodioController::class, 'show'])->name('episodios.show');
     Route::delete('/{episodio}/eliminar', [EpisodioController::class, 'destroy'])->name('episodios.destroy');
     Route::put('/{episodio}/finalizar', [EpisodioController::class, 'finalizar'])->name('episodios.finalizar');

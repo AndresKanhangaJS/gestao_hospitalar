@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('episodios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('paciente_id')->constrained('pacientes');
-            $table->foreignId('medico_id')->constrained('users');
+            $table->foreignId('medico_id')->nullable()->constrained('users');
             $table->foreignId('tipo_atendimento_id')->constrained('tipos_atendimentos');
 
             $table->string('codigo_atendimento')->unique();
@@ -25,9 +25,9 @@ return new class extends Migration
             $table->foreignId('user_id_atualizacao')->nullable()->constrained('users');
             $table->foreignId('user_id_delete')->nullable()->constrained('users')->onDelete('set null');
             $table->text('motivo_exclusao')->nullable();
-            
+
             $table->string('status', 20)->default('activo');
-            $table->string('situacao')->default('Aberto')->nullable();
+            $table->string('situacao')->default('Aguardando Triagem')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

@@ -31,10 +31,17 @@ class Episodio extends Model
         'frequencia_cardiaca',
         'saturacao',
         'prioridade',
+        'user_id_triagem',
+        'data_triagem',
+        'data_inicio_atendimento',
+        'situacao',
+        'observacoes_triagem',
     ];
 
     protected $casts = [
         'data_abertura' => 'datetime',
+        'data_triagem' => 'datetime',
+        'data_inicio_atendimento' => 'datetime',
         'data_fecho' => 'datetime',
     ];
 
@@ -43,6 +50,12 @@ class Episodio extends Model
     public function criador()
     {
         return $this->belongsTo(User::class, 'user_id_criacao');
+    }
+
+    // Relacionamento com o enfermeiro/usuário que fez a triagem
+    public function profissionalTriagem()
+    {
+        return $this->belongsTo(User::class, 'user_id_triagem');
     }
 
     public function usuarioFechamento()

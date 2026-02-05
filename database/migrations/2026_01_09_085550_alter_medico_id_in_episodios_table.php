@@ -17,6 +17,7 @@ return new class extends Migration
 
             // 2. Alterar a restrição para apontar para a tabela 'medicos'
             $table->foreign('medico_id')
+                  ->nullable()
                   ->references('id')
                   ->on('medicos')
                   ->onDelete('restrict'); // Evita apagar médico com episódios vinculados
