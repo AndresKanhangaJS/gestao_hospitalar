@@ -118,32 +118,39 @@
                                         {{ $episodio->tipoAtendimento->nome ?? $episodio->tipo }}
                                     </span>
                                 </td>
-                                <td>
-                                    @if($episodio->situacao == 'Aguardando Triagem')
-                                        <div class="d-flex align-items-center text-warning fw-medium">
-                                            <i class="ri-loader-2-line ri-spin me-1 fs-16"></i>
-                                            <span>Pendente na Triagem</span>
-                                        </div>
-                                    @else
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-medium text-dark">
-                                                <i class="ri-user-star-line me-1 text-primary"></i>
-                                                {{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo }}
+                                <td class="align-middle">
+                                    <div class="d-flex flex-column gap-1">
+                                        @if($episodio->medico)
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span class="fw-bold text-dark">
+                                                    <i class="ri-user-star-line me-1 text-primary"></i>
+                                                    {{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo }}
+                                                </span>
+                                            </div>
+                                        @else
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span class="text-muted italic fs-13">
+                                                    <i class="ri-user-search-line me-1"></i> Médico não atribuído
+                                                </span>
+                                            </div>
+                                        @endif
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge {{ $episodio->situacao == 'Aguardando Triagem' ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success' }} border border-{{ $episodio->situacao == 'Aguardando Triagem' ? 'warning' : 'success' }}-subtle px-2">
+                                                @if($episodio->situacao == 'Aguardando Triagem')
+                                                    <i class="ri-loader-2-line ri-spin me-1"></i>
+                                                @endif
+                                                {{ $episodio->situacao }}
                                             </span>
-                                            <small class="text-muted ps-4">Encaminhado por: {{ $episodio->profissionalTriagem->name ?? 'Sistema' }}</small>
+
+                                            @if($episodio->profissionalTriagem)
+                                                <small class="text-muted border-start ps-2">
+                                                    Triado por: <span class="fw-medium">{{ explode(' ', $episodio->profissionalTriagem->name)[0] }}</span>
+                                                </small>
+                                            @endif
                                         </div>
-                                    @endif
+                                    </div>
                                 </td>
-                                {{-- <td>
-                                    @if($episodio->medico)
-                                        <span class="text-muted fw-medium">
-                                            <i class="ri-user-star-line me-1 text-primary"></i>
-                                            {{ $episodio->medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $episodio->medico->nome_completo }}
-                                        </span>
-                                    @else
-                                        <span class="badge bg-soft-warning text-warning">Aguardando Triagem</span>
-                                    @endif
-                                </td> --}}
                                 <td>
                                     <span class="badge {{ $episodio->status == 'activo' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} text-uppercase">
                                         {{ $episodio->status }}
@@ -248,18 +255,24 @@
                                                 </h5>
 
                                                 <div class="row g-3">
-                                                    <div class="col-md-8">
-                                                        <label class="form-label fw-bold">Médico Responsável <span class="text-danger">*</span></label>
-                                                        <select class="form-select border-light bg-light" name="medico_id" required>
+                                                    <div class="col-md-5">
+                                                        <label class="form-label fw-bold">Médico Responsável</label>
+                                                        <input type="text" class="form-control border-light bg-light-subtle fw-bold" value="{{ $episodio->medico->nome_completo ?? 'Não atribuído'}}" readonly>
+
+                                                        {{-- <select class="form-select border-light bg-light" name="medico_id" required>
                                                             <option value="">Selecione o médico para o atendimento...</option>
                                                             @foreach($medicos as $medico)
                                                                 <option value="{{ $medico->id }}">
                                                                     {{ $medico->genero == 'Masculino' ? 'Dr.' : 'Dra.' }} {{ $medico->nome_completo }}
                                                                 </option>
                                                             @endforeach
-                                                        </select>
+                                                        </select> --}}
                                                     </div>
                                                     <div class="col-md-4">
+                                                        <label class="form-label fw-bold">Tipo de Atendimento</label>
+                                                        <input type="text" class="form-control border-light bg-light-subtle fw-bold" value="{{ $episodio->tipoAtendimento->nome ?? 'Não atribuído'}}" readonly>
+                                                    </div>
+                                                    <div class="col-md-3">
                                                         <label for="prioridade" class="form-label fw-semibold text-muted small">PRIORIDADE <span class="text-danger">*</span></label>
                                                         <select class="form-select border-light bg-light fw-bold" name="prioridade" id="prioridade" required onchange="updatePriorityColor(this)">
                                                             <option value="" selected disabled>Classificar...</option>
@@ -412,7 +425,7 @@ $(document).ready(function() {
         form.find('.text-danger.small, .invalid-feedback').remove();
 
         // Feedback visual
-        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Gravando...');
+        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> A processar...');
 
         $.ajax({
             url: form.attr('action'),

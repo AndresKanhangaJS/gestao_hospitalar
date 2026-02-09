@@ -161,8 +161,10 @@ class EpisodioController extends Controller
             $validado = $request->validate([
                 'paciente_id' => 'required|exists:pacientes,id',
                 'tipo_atendimento_id' => 'required|exists:tipos_atendimentos,id',
+                'medico_id'           => 'required|exists:medicos,id',
             ], [
                 'required' => 'O campo :attribute é obrigatório.',
+                'exists'   => 'O valor selecionado para :attribute é inválido.',
             ]);
 
             DB::beginTransaction();
@@ -177,6 +179,7 @@ class EpisodioController extends Controller
                 'paciente_id' => $validado['paciente_id'],
                 'tipo_atendimento_id' => $validado['tipo_atendimento_id'],
                 'codigo_atendimento' => $codigo,
+                'medico_id'           => $validado['medico_id'],
                 'situacao' => 'Aguardando Triagem', // <--- Estado inicial
                 'user_id_criacao' => auth()->id(),
                 'data_abertura' => now(),
@@ -219,7 +222,7 @@ class EpisodioController extends Controller
                 'altura'              => 'nullable|numeric',
                 'frequencia_cardiaca' => 'nullable|integer',
                 'saturacao'           => 'nullable|integer',
-                'medico_id'           => 'required|exists:medicos,id',
+                //'medico_id'           => 'required|exists:medicos,id',
                 'observacoes_triagem' => 'nullable|string',
                 'prioridade'          => 'required|string',
             ], [
@@ -241,7 +244,7 @@ class EpisodioController extends Controller
                 'altura'              => $validado['altura'],
                 'frequencia_cardiaca' => $validado['frequencia_cardiaca'],
                 'saturacao'           => $validado['saturacao'],
-                'medico_id'           => $validado['medico_id'],
+                //'medico_id'           => $validado['medico_id'],
                 'observacoes_triagem' => $validado['observacoes_triagem'],
                 'prioridade'          => $validado['prioridade'],
                 'situacao'            => 'Aguardando Atendimento', // Avança para o próximo estado

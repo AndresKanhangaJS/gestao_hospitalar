@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             ExameModuloSeeder::class,
+            TiposAtendimentosSeeder::class,
         ]);
     }
 }
