@@ -160,6 +160,59 @@
                         </div>
                     </div>
 
+                    <div class="mb-2">
+                        <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
+                            <i class="ri-percent-line me-2 fs-20"></i> Cláusulas de Desconto e Co-pagamento
+                        </h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle" id="tabela-regras">
+                                <thead class="table-light small text-uppercase">
+                                    <tr>
+                                        <th>Categoria</th>
+                                        <th>Abrangência</th>
+                                        <th>Tipo</th>
+                                        <th style="width: 150px;">Resp. Empresa</th>
+                                        <th style="width: 150px;">Resp. Paciente</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="regra-row">
+                                        <td>
+                                            <select name="regras[0][categoria]" class="form-select form-select-sm" required>
+                                                <option value="Consulta">Consulta</option>
+                                                <option value="Medicamento">Medicamento</option>
+                                                <option value="Laboratorio">Laboratório</option>
+                                                <option value="Internamento">Internamento</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="regras[0][aplicavel_a]" class="form-select form-select-sm">
+                                                <option value="todos">Todos</option>
+                                                <option value="titular">Apenas Titular</option>
+                                                <option value="dependente">Apenas Dependentes</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="regras[0][tipo_valor]" class="form-select form-select-sm">
+                                                <option value="percentagem">Percentagem (%)</option>
+                                                <option value="fixo">Valor Fixo (AKZ)</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" name="regras[0][empresa]" class="form-control form-control-sm" placeholder="Ex: 50" required></td>
+                                        <td><input type="number" name="regras[0][paciente]" class="form-control form-control-sm" placeholder="Ex: 50" required></td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-soft-danger remove-row"><i class="ri-delete-bin-line"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-sm btn-soft-primary" id="add-regra">
+                                <i class="ri-add-line align-middle"></i> Adicionar Cláusula
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-footer bg-light-subtle hstack gap-2 justify-content-end p-4 border-top">
@@ -250,7 +303,7 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 $(document).ready(function() {
 
@@ -332,5 +385,63 @@ $(document).ready(function() {
         });
     }
 });
+$(document).ready(function() {
+    let regraIndex = 1;
+
+    // Adicionar nova linha de regra
+    $('#add-regra').on('click', function() {
+        const newRow = `
+        <tr class="regra-row">
+            <td>
+                <select name="regras[${regraIndex}][categoria]" class="form-select form-select-sm" required>
+                    <option value="Consulta">Consulta</option>
+                    <option value="Medicamento">Medicamento</option>
+                    <option value="Laboratorio">Laboratório</option>
+                    <option value="Internamento">Internamento</option>
+                </select>
+            </td>
+            <td>
+                <select name="regras[${regraIndex}][aplicavel_a]" class="form-select form-select-sm">
+                    <option value="todos">Todos</option>
+                    <option value="titular">Apenas Titular</option>
+                    <option value="dependente">Apenas Dependentes</option>
+                </select>
+            </td>
+            <td>
+                <select name="regras[${regraIndex}][tipo_valor]" class="form-select form-select-sm">
+                    <option value="percentagem">Percentagem (%)</option>
+                    <option value="fixo">Valor Fixo (AKZ)</option>
+                </select>
+            </td>
+            <td><input type="number" name="regras[${regraIndex}][empresa]" class="form-control form-control-sm" required></td>
+            <td><input type="number" name="regras[${regraIndex}][paciente]" class="form-control form-control-sm" required></td>
+            <td>
+                <button type="button" class="btn btn-sm btn-soft-danger remove-row">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </td>
+        </tr>`;
+
+        $('#tabela-regras tbody').append(newRow);
+        regraIndex++;
+    });
+
+    // Remover linha (com proteção extra via JS além do CSS)
+    $(document).on('click', '.remove-row', function() {
+        // Verifica se não é a primeira linha antes de remover
+        if ($(this).closest('tr').is(':first-child')) {
+            return false;
+        }
+        $(this).closest('tr').remove();
+    });
+});
 </script>
-@endsection
+@endpush
+@push('styles')
+<style>
+    /* Esconde o botão remover apenas na primeira linha da tabela de regras */
+    #tabela-regras tbody tr:first-child .remove-row {
+        display: none !important;
+    }
+</style>
+@endpush
