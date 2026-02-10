@@ -112,14 +112,14 @@
                 @can('gestao_medicos.menu')
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarGestMedicos" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarGestMedicos">
-                        <i class="ri-stethoscope-line"></i> <span data-key="t-apps">Médicos</span>
+                        <i class="ri-stethoscope-line"></i> <span data-key="t-apps">Quadro Clínico</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarGestMedicos">
                         <ul class="nav nav-sm flex-column">
                             @can('medicos.menu')
                             <li class="nav-item">
                                 <a href="#sidebarMedicos" class="nav-link" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarMedicos" data-key="t-calender">
-                                    Médicos
+                                    Quadro Clínico
                                 </a>
                                 <div class="collapse menu-dropdown" id="sidebarMedicos">
                                     <ul class="nav nav-sm flex-column">

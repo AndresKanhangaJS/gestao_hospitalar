@@ -14,14 +14,16 @@ use App\Http\Requests\UpdateMedicoRequest;
 use App\Models\Receita;
 use App\Models\ReceitaItem;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Spatie\Permission\Models\Role;
 
 class MedicoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Medico::query()->with(['user', 'criador']);
+        // 1. Adicionamos 'user.roles' ao eager loading para o filtro e a view funcionarem
+        $query = Medico::query()->with(['user.roles', 'criador']);
 
-        // 1. Busca Inteligente (Nome, Email, Número de Ordem, Especialidade)
+        // 2. Busca Inteligente
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -32,17 +34,24 @@ class MedicoController extends Controller
             });
         }
 
-        // 2. Filtro por Status
+        // 3. FILTRO POR PERFIL (ROLE) - A parte que faltava!
+        if ($request->filled('role')) {
+            $role = $request->role;
+            // Filtra médicos que possuem o usuário com a role específica
+            $query->whereHas('user.roles', function($q) use ($role) {
+                $q->where('name', $role);
+            });
+        }
+
+        // 4. Outros Filtros
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // 3. Filtro por Género
         if ($request->filled('genero')) {
             $query->where('genero', $request->genero);
         }
 
-        // 4. Filtro por Especialidade (Específico para Médicos)
         if ($request->filled('especialidade')) {
             $query->where('especialidade', $request->especialidade);
         }
@@ -54,7 +63,11 @@ class MedicoController extends Controller
 
     public function create()
     {
-        return view('medicos.registar');
+        $rolesExcluidas = ['Super Administrador', 'Administrador'];
+        $roles = Role::whereNotIn('name', $rolesExcluidas)
+                ->orderBy('name', 'asc')
+                ->get();
+        return view('medicos.registar', compact('roles'));
     }
 
     public function store(Request $request): JsonResponse
@@ -63,8 +76,11 @@ class MedicoController extends Controller
             $validado = $request->validate([
                 'nome_completo'    => 'required|string|min:3|max:255',
                 'email'            => 'required|email|max:255|unique:users,email',
-                'numero_ordem'     => 'required|string|max:50|unique:medicos,numero_ordem',
-                'especialidade'    => 'required|string|max:255',
+                'role'             => 'required|exists:roles,name', // Validar o papel selecionado
+                // Condicional: numero_ordem é obrigatório para Médico, Enfermeiro e Laboratorista
+                'numero_ordem'     => 'required_if:role,Médico,Enfermeiro,Laboratorista|nullable|string|max:50|unique:medicos,numero_ordem',
+                // Condicional: especialidade é obrigatória apenas para Médico
+                'especialidade'    => 'required_if:role,Médico|nullable|string|max:255',
                 'data_nascimento'  => 'nullable|date|before_or_equal:today',
                 'genero'           => 'required|in:Masculino,Feminino',
                 'tipo_documento'   => 'required|in:BI,Passaporte',
@@ -72,50 +88,51 @@ class MedicoController extends Controller
                 'telefone'         => 'nullable|string|min:9|max:20',
                 'morada'           => 'nullable|string|max:500',
             ], [
-                'email.unique' => 'Este e-mail já está associado a um usuário no sistema.',
+                'email.unique' => 'Este e-mail já está associado a um usuário.',
                 'numero_ordem.unique' => 'Este número de ordem já está registado.',
-                'numero_documento.required' => 'O número do documento é obrigatório (será a senha de acesso).',
+                'numero_ordem.required_if' => 'O número de ordem é obrigatório para este perfil.',
+                'especialidade.required_if' => 'A especialidade é obrigatória para médicos.',
                 'required' => 'O campo :attribute é obrigatório.'
             ]);
 
-            return DB::transaction(function () use ($validado) {
-                // Gerar código único de 5 dígitos
+            return DB::transaction(function () use ($validado, $request) {
+                // Gerar código único
                 do {
                     $codigo = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+                    $exists = User::where('codigo', $codigo)->exists() || Medico::where('codigo_medico', $codigo)->exists();
+                } while ($exists);
 
-                    $codigoExisteNoMedico = Medico::where('codigo_medico', $codigo)->exists();
-                    $codigoExisteNoUser   = User::where('codigo', $codigo)->exists();
-                } while ($codigoExisteNoMedico || $codigoExisteNoUser);
-                // 1. Criar o Usuário para login
+                // 1. Criar o Usuário
                 $user = User::create([
-                    'codigo'     => $codigo,
+                    'codigo'   => $codigo,
                     'name'     => $validado['nome_completo'],
                     'email'    => $validado['email'],
                     'password' => Hash::make($validado['numero_documento']),
                     'status'   => 'activo',
                 ]);
-                // --- Associar o Papel de Médico ---
-                $user->assignRole('Médico');
 
-                // 2. Criar o registro do Médico vinculado ao Usuário
+                // 2. Associar o Papel DINAMICAMENTE
+                $user->assignRole($request->role);
+
+                // 3. Criar registro na tabela medicos/profissionais
                 $validado['codigo_medico'] = $codigo;
                 $validado['user_id'] = $user->id;
                 $validado['user_id_criacao'] = Auth::id();
                 $validado['status'] = 'activo';
 
-                $medico = Medico::create($validado);
+                $profissional = Medico::create($validado);
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Médico registado com sucesso! As credenciais de acesso estão defenidos com o e-mail e o número do documento.",
-                    'data'    => $medico
+                    'message' => "Profissional ({$request->role}) registado com sucesso!",
+                    'data'    => $profissional
                 ], 201);
             });
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['success' => false, 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erro interno: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Erro: ' . $e->getMessage()], 500);
         }
     }
 
@@ -139,31 +156,57 @@ class MedicoController extends Controller
         try {
             $data = $request->validated();
 
-            // Preenche o modelo com os novos dados
-            $medico->fill($data);
+            $result = DB::transaction(function () use ($data, $medico) {
+                // 1. Atualizar dados do Usuário
+                $medico->user->fill([
+                    'name'  => $data['nome_completo'],
+                    'email' => $data['email'],
+                ]);
 
-            // Verifica se houve alteração real (comparando com os dados originais do banco)
-            if (!$medico->isDirty()) {
+                // Capturamos se o usuário mudou (sem salvar ainda)
+                $userDirty = $medico->user->isDirty();
+
+                // 2. Lógica de campos por Cargo
+                if ($data['role'] !== 'Médico') {
+                    $data['especialidade'] = null;
+                }
+                if (!in_array($data['role'], ['Médico', 'Enfermeiro', 'Laboratorista'])) {
+                    $data['numero_ordem'] = null;
+                }
+
+                // 3. Verificar alterações no Médico
+                $medico->fill($data);
+
+                // Verificamos se ALGO mudou em qualquer um dos dois modelos
+                if (!$medico->isDirty() && !$userDirty) {
+                    return 'no_changes';
+                }
+
+                // 4. Salvar ambos
+                $medico->user->save();
+                $medico->user_id_atualizacao = auth()->id();
+                $medico->save();
+
+                return 'success';
+            });
+
+            if ($result === 'no_changes') {
                 return response()->json([
                     'status'  => 'info',
-                    'message' => 'Nenhuma alteração foi detectada nos dados do médico.'
+                    'message' => 'Nenhuma alteração foi detectada.'
                 ], 200);
             }
 
-            // Se houver campos de log de auditoria:
-            $medico->user_id_atualizacao = auth()->id();
-            $medico->save();
-
             return response()->json([
                 'status'  => 'success',
-                'message' => 'Os dados do médico foram atualizados com sucesso!',
+                'message' => 'Dados atualizados com sucesso!',
                 'id'      => codificar($medico->id)
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Erro ao processar atualização: ' . $e->getMessage()
+                'message' => 'Erro ao atualizar: ' . $e->getMessage()
             ], 500);
         }
     }

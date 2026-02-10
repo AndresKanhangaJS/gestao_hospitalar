@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Gestão de Médicos')
+@section('title', 'Gestão de Profissionais')
 
 @section('content')
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between shadow-sm p-3 bg-white rounded">
             <h4 class="mb-sm-0 text-uppercase fw-bold text-primary">
-                <i class="ri-nurse-line me-1"></i> Médicos
+                <i class="ri-team-line me-1"></i> Quadro Clínico
             </h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="javascript: void(0);">Sistema</a></li>
-                    <li class="breadcrumb-item active">Lista de Médicos</li>
+                    <li class="breadcrumb-item active">Profissionais</li>
                 </ol>
             </div>
         </div>
@@ -23,11 +23,11 @@
     <div class="col-lg-12">
         <div class="card shadow-sm border-0">
             <div class="card-header border-0 align-items-center d-flex">
-                <h5 class="card-title mb-0 flex-grow-1 fw-bold text-muted">Corpo Clínico</h5>
+                <h5 class="card-title mb-0 flex-grow-1 fw-bold text-muted">Quadro Clínico</h5>
                 <div class="flex-shrink-0">
                     @can('medicos.registar')
                     <a href="{{ route('medicos.create') }}" class="btn btn-success btn-label">
-                        <i class="ri-add-line label-icon align-middle fs-16 me-2"></i> Novo Médico
+                        <i class="ri-add-line label-icon align-middle fs-16 me-2"></i> Novo Profissional
                     </a>
                     @endcan
                 </div>
@@ -36,15 +36,28 @@
             <div class="card-body border border-dashed border-end-0 border-start-0 bg-light-subtle">
                 <form action="{{ route('medicos.index') }}" method="GET">
                     <div class="row g-2">
-                        <div class="col-xxl-4 col-sm-6">
+                        {{-- Busca por Texto --}}
+                        <div class="col-xxl-3 col-sm-6">
                             <div class="search-box">
                                 <input type="text" name="search" value="{{ request('search') }}"
                                     class="form-control search bg-white border-light"
-                                    placeholder="Nome, Nº Ordem, Especialidade ou Email...">
+                                    placeholder="Nome, Nº Ordem ou Email...">
                                 <i class="ri-search-line search-icon"></i>
                             </div>
                         </div>
 
+                        {{-- Filtro por Perfil (Cargo) --}}
+                        <div class="col-xxl-2 col-sm-3">
+                            <select class="form-select bg-white border-light" name="role">
+                                <option value="">Perfil (Todos)</option>
+                                <option value="Médico" {{ request('role') == 'Médico' ? 'selected' : '' }}>Médicos</option>
+                                <option value="Enfermeiro" {{ request('role') == 'Enfermeiro' ? 'selected' : '' }}>Enfermeiros</option>
+                                <option value="Recepcionista" {{ request('role') == 'Recepcionista' ? 'selected' : '' }}>Recepcionistas</option>
+                                <option value="Laboratorista" {{ request('role') == 'Laboratorista' ? 'selected' : '' }}>Laboratoristas</option>
+                            </select>
+                        </div>
+
+                        {{-- Filtro por Status --}}
                         <div class="col-xxl-2 col-sm-3">
                             <select class="form-select bg-white border-light" name="status">
                                 <option value="">Status (Todos)</option>
@@ -53,6 +66,7 @@
                             </select>
                         </div>
 
+                        {{-- Filtro por Género --}}
                         <div class="col-xxl-2 col-sm-3">
                             <select class="form-select bg-white border-light" name="genero">
                                 <option value="">Género</option>
@@ -61,7 +75,8 @@
                             </select>
                         </div>
 
-                        <div class="col-xxl-4 col-sm-12 d-flex gap-2">
+                        {{-- Botões de Acção --}}
+                        <div class="col-xxl-3 col-sm-12 d-flex gap-2">
                             <button type="submit" class="btn btn-primary w-100 shadow-sm">
                                 <i class="ri-equalizer-fill me-1 align-bottom"></i> Filtrar
                             </button>
@@ -78,8 +93,8 @@
                     <table class="table table-hover align-middle table-nowrap">
                         <thead class="table-light text-muted">
                             <tr>
-                                <th scope="col" class="ps-4">Médico</th>
-                                <th scope="col">Nº Ordem / Especialidade</th>
+                                <th scope="col" class="ps-4">Profissional</th>
+                                <th scope="col">Perfil</th>
                                 <th scope="col">Contacto</th>
                                 <th scope="col">Status</th>
                                 <th scope="col" class="text-center">Acções</th>
@@ -99,13 +114,45 @@
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="mb-0 fw-medium text-dark">{{ $medico->nome_completo }}</h6>
-                                            <small class="text-muted">Usuário: {{ $medico->user->email }}</small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ $medico->numero_ordem }}</span>
-                                    <div class="text-muted fs-12 mt-1">{{ $medico->especialidade ?? 'Geral' }}</div>
+                                    @if($medico->user)
+                                        @php
+                                            // Filtramos as roles para ignorar os administradores na listagem
+                                            $perfisClinicos = $medico->user->roles->filter(function($role) {
+                                                return in_array($role->name, ['Médico', 'Enfermeiro', 'Recepcionista', 'Laboratorista']);
+                                            });
+                                        @endphp
+
+                                        @forelse($perfisClinicos as $perfil)
+                                            @php
+                                                // Definição de cores específicas para cada perfil operacional
+                                                $corBadge = match($perfil->name) {
+                                                    'Médico'        => 'bg-primary-subtle text-primary',
+                                                    'Enfermeiro'    => 'bg-info-subtle text-info',
+                                                    'Recepcionista' => 'bg-warning-subtle text-warning',
+                                                    'Laboratorista' => 'bg-success-subtle text-success',
+                                                    default         => 'bg-light text-muted'
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $corBadge }} text-uppercase">{{ $perfil->name }}</span>
+                                        @empty
+                                            <span class="badge bg-light text-muted">Sem Perfil Clínico</span>
+                                        @endforelse
+                                    @else
+                                        <span class="badge bg-light text-muted">Usuário não vinculado</span>
+                                    @endif
+
+                                    {{-- Subtítulo com número de ordem ou especialidade --}}
+                                    <div class="text-muted fs-11 mt-1">
+                                        @if($medico->numero_ordem)
+                                            <i class="ri-shield-user-line me-1"></i>Ordem: {{ $medico->numero_ordem }}
+                                        @else
+                                            {{ $medico->especialidade ?? 'Suporte Geral' }}
+                                        @endif
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="d-flex flex-column">
@@ -144,7 +191,7 @@
                             <tr>
                                 <td colspan="5" class="text-center py-5">
                                     <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
-                                    <h5 class="mt-2 text-muted">Nenhum médico encontrado.</h5>
+                                    <h5 class="mt-2 text-muted">Nenhum profissional encontrado.</h5>
                                 </td>
                             </tr>
                             @endforelse

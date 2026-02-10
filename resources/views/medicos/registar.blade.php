@@ -6,10 +6,10 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between shadow-sm p-3 mb-4 bg-white rounded">
-            <h4 class="mb-sm-0 text-primary fw-bold"><i class="ri-nurse-line me-2"></i>Médicos</h4>
+            <h4 class="mb-sm-0 text-primary fw-bold"><i class="ri-nurse-line me-2"></i>Quadro Clínico</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="javascript: void(0);">Corpo Clínico</a></li>
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">Quadro Clínico</a></li>
                     <li class="breadcrumb-item active">Registar</li>
                 </ol>
             </div>
@@ -22,7 +22,7 @@
         <div class="card shadow-lg border-0">
             <div class="card-header border-0 bg-primary-subtle py-3">
                 <div class="d-flex align-items-center">
-                    <h5 class="card-title mb-0 flex-grow-1 fw-bold text-primary">Registar Novo Médico</h5>
+                    <h5 class="card-title mb-0 flex-grow-1 fw-bold text-primary">Registar Novo Profissional</h5>
                     <div class="flex-shrink-0">
                         @can('medicos.listar')
                         <a href="{{ route('medicos.index') }}" class="btn btn-white btn-sm shadow-sm border-light">
@@ -36,6 +36,32 @@
             <form id="form-medico" class="tablelist-form" autocomplete="true" action="{{ route('medicos.store') }}" method="POST">
                 @csrf
                 <div class="card-body p-4">
+                    {{-- Perfil de Acesso Dinâmico --}}
+                    <div class="mb-5">
+                        <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
+                            <i class="ri-user-settings-line me-2 fs-20"></i> Perfil do Profissional
+                        </h5>
+                        <div class="row g-2"> {{-- g-2 para menos espaçamento entre cards --}}
+                            @foreach($roles as $role)
+                            <div class="col-4 col-sm-3 col-md-2"> {{-- Cards menores: 6 por linha em telas grandes --}}
+                                <input type="radio" class="btn-check" name="role" id="role_{{ $role->id }}" value="{{ $role->name }}" required>
+                                <label class="btn btn-outline-light d-flex flex-column align-items-center p-2 shadow-sm role-card" for="role_{{ $role->id }}">
+                                    <div class="avatar-xs mb-1"> {{-- Diminuído de avatar-sm para avatar-xs --}}
+                                        <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-16">
+                                            @if($role->name == 'Médico') <i class="ri-heart-pulse-line"></i>
+                                            @elseif($role->name == 'Enfermeiro') <i class="ri-nurse-line"></i>
+                                            @elseif($role->name == 'Laboratorista') <i class="ri-flask-line"></i>
+                                            @elseif($role->name == 'Recepcionista') <i class="ri-customer-service-2-line"></i>
+                                            @else <i class="ri-user-3-line"></i>
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <span class="fs-11 fw-bold text-dark text-uppercase">{{ $role->name }}</span>
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
                     {{-- Dados Profissionais --}}
                     <div class="mb-5">
                         <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
@@ -47,16 +73,27 @@
                                 <input type="text" id="nome_completo" name="nome_completo" class="form-control border-light bg-light" placeholder="Nome completo do médico" required>
                             </div>
                             <div class="col-lg-4">
-                                <label for="numero_ordem" class="form-label fw-semibold text-muted small">Nº DE ORDEM (CRM) <span class="text-danger">*</span></label>
-                                <input type="text" id="numero_ordem" name="numero_ordem" class="form-control border-light bg-light" placeholder="Ex: 12345" required>
+                                <label class="form-label d-block fw-semibold text-muted small">GÊNERO <span class="text-danger">*</span></label>
+                                <div class="d-flex align-items-center mt-2 ps-1">
+                                    <div class="form-check form-check-primary me-4">
+                                        <input class="form-check-input" type="radio" name="genero" id="generoM" value="Masculino" checked>
+                                        <label class="form-check-label" for="generoM">Masculino</label>
+                                    </div>
+                                    <div class="form-check form-check-primary">
+                                        <input class="form-check-input" type="radio" name="genero" id="generoF" value="Feminino">
+                                        <label class="form-check-label" for="generoF">Feminino</label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-lg-6">
+                            {{-- Div Ordem: Visível apenas para Médicos e Enfermeiros --}}
+                            <div class="col-lg-6" id="div_numero_ordem" style="display: none;">
+                                <label for="numero_ordem" class="form-label fw-semibold text-muted small">Nº DE ORDEM / CARTEIRA <span class="text-danger">*</span></label>
+                                <input type="text" id="numero_ordem" name="numero_ordem" class="form-control border-light bg-light" placeholder="Ex: 12345">
+                            </div>
+                            {{-- Div Especialidade: Visível apenas para Médicos --}}
+                            <div class="col-lg-6" id="div_especialidade" style="display: none;">
                                 <label for="especialidade" class="form-label fw-semibold text-muted small">ESPECIALIDADE <span class="text-danger">*</span></label>
-                                <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" placeholder="Ex: Clínica Geral, Pediatria..." required>
-                            </div>
-                            <div class="col-lg-6">
-                                <label for="email" class="form-label fw-semibold text-muted small">E-MAIL (USUÁRIO) <span class="text-danger">*</span></label>
-                                <input type="email" id="email" name="email" class="form-control border-light bg-light" placeholder="exemplo@hospital.com" required>
+                                <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" placeholder="Ex: Clínica Geral, Pediatria...">
                             </div>
                         </div>
                     </div>
@@ -72,17 +109,8 @@
                                 <input type="date" id="data_nascimento" name="data_nascimento" class="form-control border-light bg-light" max="{{ date('Y-m-d') }}">
                             </div>
                             <div class="col-lg-4">
-                                <label class="form-label d-block fw-semibold text-muted small">GÊNERO <span class="text-danger">*</span></label>
-                                <div class="d-flex align-items-center mt-2 ps-1">
-                                    <div class="form-check form-check-primary me-4">
-                                        <input class="form-check-input" type="radio" name="genero" id="generoM" value="Masculino" checked>
-                                        <label class="form-check-label" for="generoM">Masculino</label>
-                                    </div>
-                                    <div class="form-check form-check-primary">
-                                        <input class="form-check-input" type="radio" name="genero" id="generoF" value="Feminino">
-                                        <label class="form-check-label" for="generoF">Feminino</label>
-                                    </div>
-                                </div>
+                                <label for="email" class="form-label fw-semibold text-muted small">E-MAIL <span class="text-danger">*</span></label>
+                                <input type="email" id="email" name="email" class="form-control border-light bg-light" placeholder="exemplo@hospital.com" required>
                             </div>
                             <div class="col-lg-4">
                                 <label for="telefone" class="form-label fw-semibold text-muted small">TELEFONE</label>
@@ -110,7 +138,7 @@
                 <div class="card-footer bg-light-subtle hstack gap-2 justify-content-end p-4 border-top">
                     <button type="reset" class="btn btn-ghost-secondary px-4">Limpar</button>
                     <button type="submit" class="btn btn-success px-5 shadow-sm">
-                        <i class="ri-save-line align-bottom me-1"></i> Registar Médico
+                        <i class="ri-save-line align-bottom me-1"></i> Registar Profissional
                     </button>
                 </div>
             </form>
@@ -147,7 +175,7 @@ $(document).ready(function() {
                     text: response.message,
                     showCancelButton: true,
                     confirmButtonText: '<i class="ri-add-line me-1"></i> Registar Outro',
-                    cancelButtonText: '<i class="ri-list-unordered me-1"></i> Listar Médicos',
+                    cancelButtonText: '<i class="ri-list-unordered me-1"></i> Listar Profissionais',
                     confirmButtonColor: '#0ab39c',
                     cancelButtonColor: '#3577f1',
                     allowOutsideClick: false
@@ -155,7 +183,7 @@ $(document).ready(function() {
                     if (result.isConfirmed) {
                         form[0].reset();
                         window.scrollTo(0, 0);
-                        btnSubmit.prop('disabled', false).html('<i class="ri-save-line align-bottom me-1"></i> Registar Médico');
+                        btnSubmit.prop('disabled', false).html('<i class="ri-save-line align-bottom me-1"></i> Registar Profissional');
                     } else {
                         window.location.href = "{{ route('medicos.index') }}";
                     }
@@ -175,11 +203,71 @@ $(document).ready(function() {
                         }
                     });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Erro!', text: 'Ocorreu um erro ao tentar gravar o médico.' });
+                    Swal.fire({ icon: 'error', title: 'Erro!', text: 'Ocorreu um erro ao tentar guardar o profissional.' });
                 }
             }
         });
     });
 });
+
+$('input[name="role"]').on('change', function() {
+    const role = $(this).val();
+
+    // 1. Especialidade: Apenas para Médicos
+    if (role === 'Médico') {
+        $('#div_especialidade').slideDown();
+        $('#especialidade').attr('required', true);
+    } else {
+        $('#div_especialidade').slideUp();
+        $('#especialidade').attr('required', false).val('');
+    }
+
+    // 2. Número de Ordem: Médico, Enfermeiro e Laboratorista
+    const rolesComOrdem = ['Médico', 'Enfermeiro', 'Laboratorista'];
+
+    if (rolesComOrdem.includes(role)) {
+        $('#div_numero_ordem').slideDown();
+        $('#numero_ordem').attr('required', true);
+    } else {
+        $('#div_numero_ordem').slideUp();
+        $('#numero_ordem').attr('required', false).val('');
+    }
+
+    // Atualiza o título dinamicamente
+    $('.card-title:contains("Identificação Profissional")').html(
+        `<i class="ri-briefcase-line me-2 fs-20"></i> Identificação Profissional: ${role}`
+    );
+});
 </script>
+@endpush
+@push('styles')
+<style>
+    .role-card {
+        transition: all 0.2s ease-in-out;
+        border: 1px solid #e9ebec !important; /* Borda mais fina */
+        background-color: #f8f9fa !important;
+        min-height: 85px; /* Altura fixa para manter alinhamento */
+        justify-content: center;
+    }
+    .role-card:hover {
+        border-color: #3577f1 !important;
+        background-color: #ffffff !important;
+    }
+    .btn-check:checked + .role-card {
+        border-color: #0ab39c !important;
+        border-width: 2px !important;
+        background-color: #e6f7f5 !important;
+    }
+    .btn-check:checked + .role-card .avatar-title {
+        background-color: #0ab39c !important;
+        color: white !important;
+    }
+    /* Estilo para o texto não quebrar de forma feia */
+    .role-card span.fs-11 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+</style>
 @endpush

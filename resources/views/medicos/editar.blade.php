@@ -37,7 +37,14 @@
             <form id="form-medico-edit" action="{{ route('medicos.update', $medico) }}" method="POST">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="role" value="{{ $medico->user->roles->first()->name ?? 'Médico' }}">
                 <div class="card-body p-4">
+                    {{-- Div Ordem: Visível para Médico, Enfermeiro e Laboratorista --}}
+                    @php
+                        $roleName = $medico->user->roles->first()->name ?? '';
+                        $exibirOrdem = in_array($roleName, ['Médico', 'Enfermeiro', 'Laboratorista']);
+                        $exibirEspecialidade = ($roleName === 'Médico');
+                    @endphp
                     {{-- Identificação Profissional --}}
                     <div class="mb-5">
                         <h5 class="card-title text-primary border-bottom pb-3 mb-4 d-flex align-items-center">
@@ -49,16 +56,28 @@
                                 <input type="text" id="nome_completo" name="nome_completo" class="form-control border-light bg-light" value="{{ $medico->nome_completo }}" required>
                             </div>
                             <div class="col-lg-4">
-                                <label for="numero_ordem" class="form-label fw-semibold text-muted small">Nº DE ORDEM (CRM) <span class="text-danger">*</span></label>
-                                <input type="text" id="numero_ordem" name="numero_ordem" class="form-control border-light bg-light" value="{{ $medico->numero_ordem }}" required>
+                                <label class="form-label d-block fw-semibold text-muted small">GÊNERO <span class="text-danger">*</span></label>
+                                <div class="d-flex align-items-center mt-2 ps-1">
+                                    <div class="form-check form-check-primary me-4">
+                                        <input class="form-check-input" type="radio" name="genero" id="editM" value="Masculino" {{ $medico->genero == 'Masculino' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="editM">Masculino</label>
+                                    </div>
+                                    <div class="form-check form-check-primary">
+                                        <input class="form-check-input" type="radio" name="genero" id="editF" value="Feminino" {{ $medico->genero == 'Feminino' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="editF">Feminino</label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-lg-6">
+
+                            {{-- Uso correto das variáveis definidas no @php inicial --}}
+                            <div class="col-lg-6" id="div_numero_ordem" style="display: {{ $exibirOrdem ? 'block' : 'none' }};">
+                                <label for="numero_ordem" class="form-label fw-semibold text-muted small">Nº DE ORDEM / CARTEIRA <span class="text-danger">*</span></label>
+                                <input type="text" id="numero_ordem" name="numero_ordem" class="form-control border-light bg-light" value="{{ $medico->numero_ordem }}">
+                            </div>
+
+                            <div class="col-lg-6" id="div_especialidade" style="display: {{ $exibirEspecialidade ? 'block' : 'none' }};">
                                 <label for="especialidade" class="form-label fw-semibold text-muted small">ESPECIALIDADE <span class="text-danger">*</span></label>
-                                <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" value="{{ $medico->especialidade }}" required>
-                            </div>
-                            <div class="col-lg-6">
-                                <label for="email" class="form-label fw-semibold text-muted small">E-MAIL (USUÁRIO) <span class="text-danger">*</span></label>
-                                <input type="email" id="email" name="email" class="form-control border-light bg-light" value="{{ $medico->email }}" required>
+                                <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" value="{{ $medico->especialidade }}">
                             </div>
                         </div>
                     </div>
@@ -74,17 +93,8 @@
                                 <input type="date" id="data_nascimento" name="data_nascimento" class="form-control border-light bg-light" value="{{ $medico->data_nascimento ? $medico->data_nascimento->format('Y-m-d') : '' }}">
                             </div>
                             <div class="col-lg-4">
-                                <label class="form-label d-block fw-semibold text-muted small">GÊNERO <span class="text-danger">*</span></label>
-                                <div class="d-flex align-items-center mt-2 ps-1">
-                                    <div class="form-check form-check-primary me-4">
-                                        <input class="form-check-input" type="radio" name="genero" id="editM" value="Masculino" {{ $medico->genero == 'Masculino' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="editM">Masculino</label>
-                                    </div>
-                                    <div class="form-check form-check-primary">
-                                        <input class="form-check-input" type="radio" name="genero" id="editF" value="Feminino" {{ $medico->genero == 'Feminino' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="editF">Feminino</label>
-                                    </div>
-                                </div>
+                                <label for="email" class="form-label fw-semibold text-muted small">E-MAIL (USUÁRIO) <span class="text-danger">*</span></label>
+                                <input type="email" id="email" name="email" class="form-control border-light bg-light" value="{{ $medico->email }}" required>
                             </div>
                             <div class="col-lg-4">
                                 <label for="telefone" class="form-label fw-semibold text-muted small">TELEFONE</label>
@@ -195,6 +205,28 @@ $(document).ready(function() {
                 }
             }
         });
+    });
+
+    // Caso você decida permitir mudar o cargo na edição, adicione:
+    $('input[name="role"]').on('change', function() {
+        const role = $(this).val();
+        const rolesComOrdem = ['Médico', 'Enfermeiro', 'Laboratorista'];
+
+        if (role === 'Médico') {
+            $('#div_especialidade').slideDown();
+            $('#especialidade').attr('required', true);
+        } else {
+            $('#div_especialidade').slideUp();
+            $('#especialidade').attr('required', false);
+        }
+
+        if (rolesComOrdem.includes(role)) {
+            $('#div_numero_ordem').slideDown();
+            $('#numero_ordem').attr('required', true);
+        } else {
+            $('#div_numero_ordem').slideUp();
+            $('#numero_ordem').attr('required', false);
+        }
     });
 });
 </script>

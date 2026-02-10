@@ -20,21 +20,28 @@ class UpdateMedicoRequest extends FormRequest
      */
     public function rules(): array
     {
-        // Recupera o ID do médico da rota para aplicar a exceção no Unique
         $medicoId = $this->route('medico')->id;
+        $userId = $this->route('medico')->user_id;
 
         return [
+            'role'             => ['required', 'string'],
             'nome_completo'    => ['required', 'string', 'max:255'],
-            'numero_ordem'     => [
-                'required',
-                'string',
-                Rule::unique('medicos', 'numero_ordem')->ignore($medicoId)
-            ],
-            'especialidade'    => ['required', 'string', 'max:150'],
             'email'            => [
                 'required',
                 'email',
-                Rule::unique('medicos', 'email')->ignore($medicoId)
+                Rule::unique('users', 'email')->ignore($userId)
+            ],
+            'numero_ordem'     => [
+                'required_if:role,Médico,Enfermeiro,Laboratorista',
+                'nullable',
+                'string',
+                Rule::unique('medicos', 'numero_ordem')->ignore($medicoId)
+            ],
+            'especialidade'    => [
+                'required_if:role,Médico',
+                'nullable',
+                'string',
+                'max:150'
             ],
             'genero'           => ['required', 'in:Masculino,Feminino'],
             'data_nascimento'  => ['nullable', 'date', 'before_or_equal:today'],
@@ -43,6 +50,13 @@ class UpdateMedicoRequest extends FormRequest
             'numero_documento' => ['nullable', 'string', 'max:50'],
             'morada'           => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'role' => $this->route('medico')->user->roles->first()->name ?? 'Médico',
+        ]);
     }
 
     /**

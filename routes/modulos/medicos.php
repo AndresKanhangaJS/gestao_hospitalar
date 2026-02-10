@@ -3,7 +3,7 @@
 use App\Http\Controllers\MedicoController;
 
 // Médicos
-Route::prefix('medicos')->group(function () {
+Route::prefix('profissionais')->group(function () {
     Route::get('/', [MedicoController::class, 'index'])->name('medicos.index');
     Route::get('/registar', [MedicoController::class, 'create'])->name('medicos.create');
     Route::post('/store', [MedicoController::class, 'store'])->name('medicos.store');
