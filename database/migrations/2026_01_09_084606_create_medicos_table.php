@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('morada')->nullable();
 
             // Dados Profissionais Específicos
-            $table->string('numero_ordem', 30)->unique();
+            $table->string('numero_ordem', 30)->unique()->nullable();
             $table->string('especialidade')->nullable();
 
             $table->foreignId('user_id_criacao')->constrained('users');
