@@ -75,6 +75,17 @@ class PermissionSeeder extends Seeder
             "medicos.registar",
             "medicos.editar",
             "medicos.eliminar",
+            //
+            "gestao_convenios.menu",
+            "convenios.menu",
+            "convenios.listar",
+            "convenios.accoes",
+            "convenios.detalhes",
+            "convenios.registar",
+            "convenios.editar",
+            "convenios.eliminar",
+            //
+            "gestao_configuracoes.menu",
         ];
 
         foreach($permissions as $key => $value){

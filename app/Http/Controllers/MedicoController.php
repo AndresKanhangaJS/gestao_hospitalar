@@ -139,8 +139,8 @@ class MedicoController extends Controller
     public function show(Medico $medico)
     {
         // Carregamos as relações e contamos quantos episódios este médico já realizou
-        $medico->load(['criador', 'atualizador', 'episodios' => function($query) {
-            $query->with('paciente')->latest()->take(50); // Pegar os últimos 50 atendimentos
+        $medico->load(['criador', 'atualizador', 'user.roles', 'episodios' => function($query) {
+            $query->with('paciente')->latest()->take(50);
         }])->loadCount('episodios');
 
         return view('medicos.detalhes', compact('medico'));

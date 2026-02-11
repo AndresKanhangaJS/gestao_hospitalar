@@ -34,6 +34,7 @@
                         <i class="ri-home-8-line"></i> <span data-key="t-dashboards">Dashboards</span>
                     </a>
                 </li>
+                @can('gestao_configuracoes.menu')
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarConfigs" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarConfigs">
                         <i class="ri-settings-5-line"></i> <span data-key="t-apps">Configurações</span>
@@ -66,12 +67,15 @@
                                 <a href="{{ route('users.index') }}" class="nav-link" data-key="t-users"> Usuários </a>
                             </li>
                             @endcan
+                            @can('gestao_convenios.menu')
                             <li class="nav-item">
                                 <a href="{{ route('seguradoras.index') }}" class="nav-link" data-key="t-convenios"> Convénios </a>
                             </li>
+                            @endcan
                         </ul>
                     </div>
                 </li>
+                @endcan
                 @can('gestao_pacientes.menu')
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarGestPacientes" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarGestPacientes">

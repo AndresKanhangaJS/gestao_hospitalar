@@ -48,5 +48,72 @@ class RolePermissionSeeder extends Seeder
         if ($masterUser && $superAdminRole) {
             $masterUser->assignRole($superAdminRole);
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Recepcionista -> Permissões
+        |--------------------------------------------------------------------------
+        */
+
+            $recepcionistaRole = Role::where('name', 'Recepcionista')->first();
+
+            if ($recepcionistaRole) {
+                $recepcionistaPermissions = Permission::whereIn('name', [
+                    'gestao_pacientes.menu',
+                    'pacientes.menu',
+                    'pacientes.listar',
+                    'pacientes.accoes',
+                    'pacientes.detalhes',
+                    'pacientes.registar',
+                    'pacientes.editar',
+                    'episodios.registar',
+                    'episodios.detalhes',
+                ])->get();
+
+                $recepcionistaRole->syncPermissions($recepcionistaPermissions);
+            }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5. Enfermeiro -> Permissões
+        |--------------------------------------------------------------------------
+        */
+            $enfermeiroRole = Role::where('name', 'Enfermeiro')->first();
+
+            if ($enfermeiroRole) {
+                $enfermeiroPermissions = Permission::whereIn('name', [
+                    'gestao_pacientes.menu',
+                    'pacientes.menu',
+                    'pacientes.listar',
+                    'pacientes.accoes',
+                    'pacientes.triagem',
+                    'episodios.listar',
+                ])->get();
+
+                $enfermeiroRole->syncPermissions($enfermeiroPermissions);
+            }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Médico -> Permissões
+        |--------------------------------------------------------------------------
+        */
+            $medicoRole = Role::where('name', 'Médico')->first();
+
+            if ($medicoRole) {
+                $medicoPermissions = Permission::whereIn('name', [
+                    'gestao_pacientes.menu',
+                    'pacientes.menu',
+                    'pacientes.listar',
+                    'pacientes.accoes',
+                    'pacientes.detalhes',
+                    'pacientes.informacoes_medicas',
+                    'episodios.accoes',
+                    'episodios.listar',
+                    'episodios.detalhes',
+                ])->get();
+
+                $medicoRole->syncPermissions($medicoPermissions);
+            }
     }
 }

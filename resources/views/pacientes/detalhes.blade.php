@@ -273,25 +273,28 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="fw-medium text-dark">{{ $episodio->tipo }}</span>
+                                            <span class="fw-medium text-dark">{{ $episodio->tipoAtendimento->nome }}</span>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar-xxs me-2">
                                                     <div class="avatar-title bg-soft-primary rounded-circle fs-10">
-                                                        {{ strtoupper(substr($episodio->medico_nome, 0, 1)) }}
+                                                        {{ strtoupper(substr($episodio->medico->nome_completo, 0, 1)) }}
                                                     </div>
                                                 </div>
-                                                <span class="fs-13 text-muted">Dr. {{ $episodio->medico_nome }}</span>
+                                                <span class="fs-13 text-muted">Dr. {{ $episodio->medico->nome_completo }}</span>
                                             </div>
                                         </td>
                                         <td>
+                                            <span class="badge {{ $episodio->situacao == 'Aguardando Atendimento' ? 'bg-success' : 'bg-secondary' }} px-2 py-1">
+                                                {{ strtoupper($episodio->situacao) }}
+                                            </span> /
                                             <span class="badge {{ $episodio->status == 'activo' ? 'bg-success-subtle text-success' : 'bg-light text-muted' }} px-3 py-1">
                                                 <i class="ri-checkbox-blank-circle-fill fs-8 me-1"></i> {{ strtoupper($episodio->status) }}
                                             </span>
                                         </td>
                                         <td class="text-end pe-3">
-                                            <a href="{{ route('episodios.show', $episodio->id) }}" class="btn btn-sm btn-outline-primary btn-icon waves-effect waves-light shadow-none">
+                                            <a href="{{ route('episodios.show', $episodio) }}" class="btn btn-sm btn-outline-primary btn-icon waves-effect waves-light shadow-none">
                                                 <i class="ri-eye-line"></i>
                                             </a>
                                         </td>

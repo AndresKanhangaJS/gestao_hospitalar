@@ -22,7 +22,11 @@
         </div>
     </div>
 </div>
-
+@php
+    $roleName = $medico->user->roles->first()->name ?? 'Profissional';
+    $isMedico = ($roleName === 'Médico');
+    $temOrdem = in_array($roleName, ['Médico', 'Enfermeiro', 'Laboratorista']);
+@endphp
 <div class="row mt-4">
     <div class="col-xxl-3 col-lg-4">
         {{-- Card Principal de Identificação --}}
@@ -36,23 +40,30 @@
                 </div>
                 <h5 class="mb-1 fw-bold text-dark">{{ $medico->nome_completo }}</h5>
                 <span class="badge bg-secondary fs-11 align-middle ms-1">#{{ $medico->codigo_medico }}</span>
-                <p class="text-primary fw-medium mb-1">{{ $medico->especialidade ?? 'Clínico Geral' }}</p>
-                <p class="text-muted fs-12 mb-3">Nº de Ordem: <span class="fw-bold">{{ $medico->numero_ordem }}</span></p>
-
+                <p class="text-primary fw-medium mb-1">
+                    @if ($isMedico)
+                        {{ $roleName }} | {{ $medico->especialidade }}
+                    @else
+                        {{ $roleName }}
+                    @endif
+                </p>
+                @if($temOrdem)
+                    <p class="text-muted fs-12 mb-3">Nº de Ordem: <span class="fw-bold">{{ $medico->numero_ordem }}</span></p>
+                @endif
                 <div class="d-flex justify-content-center gap-2 mb-0">
                     <span class="badge {{ $medico->status == 'activo' ? 'bg-success' : 'bg-danger' }} px-3 py-2 shadow-sm text-uppercase">
                         {{ $medico->status }}
                     </span>
                 </div>
             </div>
-            <div class="card-footer py-3 bg-light-subtle border-top-0">
+            {{-- <div class="card-footer py-3 bg-light-subtle border-top-0">
                 <div class="row text-center">
                     <div class="col-12">
                         <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Atendimentos Realizados</p>
                         <h6 class="mb-0 fw-bold text-dark fs-16">{{ $medico->episodios_count ?? 0 }}</h6>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
 
         {{-- Informações de Contacto --}}
@@ -70,7 +81,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="fs-14 mb-1 fw-bold text-dark">{{ $medico->telefone ?? 'Não informado' }}</h6>
+                        <h6 class="fs-14 mb-1 fw-bold text-dark">{{ $medico->telefone }}</h6>
                         <p class="text-muted mb-0 fs-12">Telefone</p>
                     </div>
                 </div>
@@ -81,7 +92,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="fs-14 mb-1 fw-bold text-dark text-break">{{ $medico->email ?? 'N/D' }}</h6>
+                        <h6 class="fs-14 mb-1 fw-bold text-dark text-break">{{ $medico->email }}</h6>
                         <p class="text-muted mb-0 fs-12">E-mail</p>
                     </div>
                 </div>
@@ -92,7 +103,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="fs-13 mb-1 fw-bold text-dark lh-base">{{ $medico->morada ?? 'Endereço não registado' }}</h6>
+                        <h6 class="fs-13 mb-1 fw-bold text-dark lh-base">{{ $medico->morada }}</h6>
                         <p class="text-muted mb-0 fs-12">Morada</p>
                     </div>
                 </div>
@@ -109,11 +120,11 @@
                             <i class="ri-user-settings-line me-1 align-bottom"></i> Informações Pessoais e Profissionais
                         </a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link py-3" data-bs-toggle="tab" href="#atendimentos" role="tab">
                             <i class="ri-history-line me-1 align-bottom"></i> Histórico de Atendimentos
                         </a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
             <div class="card-body p-4">
@@ -199,7 +210,7 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane" id="atendimentos" role="tabpanel">
+                    {{-- <div class="tab-pane" id="atendimentos" role="tabpanel">
                         <div class="table-responsive mt-2">
                             <table class="table table-nowrap align-middle mb-0">
                                 <thead class="bg-light-subtle border-bottom">
@@ -237,7 +248,7 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>

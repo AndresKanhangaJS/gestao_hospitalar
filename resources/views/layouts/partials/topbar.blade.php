@@ -62,15 +62,17 @@
 
                             <span class="text-start ms-xl-2">
                                 <span class="d-none d-xl-inline-block ms-1 fw-semibold user-name-text">{{ Auth::user()->name }}</span>
-                                <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">Founder</span>
+                                <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">
+                                    {{ Auth::user()->roles->first()->name ?? 'Utilizador' }}
+                                </span>
                             </span>
                         </span>
                     </button>
 
                     <div class="dropdown-menu dropdown-menu-end">
-                        <a class="dropdown-item" href="#"><i class="mdi mdi-account-circle text-muted fs-16 me-1"></i> Perfil</a>
+                        {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-account-circle text-muted fs-16 me-1"></i> Perfil</a>
 
-                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-divider"></div> --}}
 
                         <form action="{{ route('logout') }}" method="POST" id="logout-form">
                             @csrf

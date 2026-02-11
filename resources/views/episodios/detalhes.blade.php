@@ -25,7 +25,7 @@
                     $classePrioridade = $corPrioridade[$episodio->prioridade] ?? 'secondary';
                 @endphp
                 <span class="badge bg-{{ $classePrioridade }} ms-3 fs-12 shadow-sm pulse-{{ $classePrioridade }}">
-                    <i class="ri-alert-fill me-1"></i> PRIORIDADE: {{ strtoupper($episodio->prioridade) }}
+                    <i class="ri-alert-fill me-1"></i> PRIORIDADE: {{ strtoupper($episodio->prioridade ?? 'Não Definida') }}
                 </span>
             </h4>
             <div class="page-title-right d-flex gap-2">
@@ -94,6 +94,7 @@
             </div>
         </div>
 
+        @can('pacientes.triagem')
         <div class="card shadow-sm border-0 border-start border-4 border-{{ $classePrioridade }} mt-4">
             <div class="card-header bg-light-subtle d-flex align-items-center justify-content-between">
                 <h6 class="card-title mb-0 fw-bold"><i class="ri-pulse-line me-2 text-danger"></i>Sinais Vitais</h6>
@@ -166,7 +167,7 @@
                 </div>
             </div>
         </div>
-
+        @endcan
         <div class="card shadow-sm border-0">
             <div class="card-header bg-light-subtle">
                 <h6 class="card-title mb-0 fw-bold"><i class="ri-information-line me-2"></i>Info do Atendimento</h6>
@@ -229,6 +230,7 @@
         @endif
 
         {{-- Card da Linha do Tempo de Evoluções --}}
+        @can('pacientes.informacoes_medicas')
         <div class="card shadow-sm border-0">
             <div class="card-header bg-light d-flex align-items-center py-2 px-3">
                 <div class="flex-grow-1">
@@ -316,6 +318,7 @@
                 </div>
             </div>
         </div>
+        @endcan
 
         {{-- Card de Exames Requisitados --}}
         <div class="card shadow-sm border-0 mt-4">
@@ -329,11 +332,11 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr class="fs-12">
-                                <th>Código REQ</th>
+                                <th>Código</th>
                                 <th>Prioridade</th>
                                 <th>Status</th>
                                 <th>Exames Selecionados</th>
-                                <th class="text-end">Ações</th>
+                                <th class="text-end">Acções</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -413,7 +416,7 @@
                                 <th>Código</th>
                                 <th>Data/Hora</th>
                                 <th>Medicamentos</th>
-                                <th class="text-end">Ações</th>
+                                <th class="text-end">Acções</th>
                             </tr>
                         </thead>
                         <tbody>

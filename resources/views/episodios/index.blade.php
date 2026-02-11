@@ -86,7 +86,7 @@
                                 <th scope="col">Tipo Atendimento</th>
                                 <th scope="col">Médico / Estado</th>
                                 <th scope="col">Status</th>
-                                <th scope="col" class="text-center">Ações</th>
+                                <th scope="col" class="text-center">Acções</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,9 +158,11 @@
                                 </td>
                                 <td>
                                     <div class="hstack gap-2 justify-content-center">
+                                        @can('episodios.detalhes')
                                         <a href="{{ route('episodios.show', $episodio) }}" class="btn btn-sm btn-soft-info" title="Ver detalhes">
                                             <i class="ri-eye-fill"></i>
                                         </a>
+                                        @endcan
                                         @if($episodio->situacao == 'Aguardando Triagem')
                                             @can('pacientes.triagem')
                                                 <button type="button" class="btn btn-sm btn-soft-success" data-bs-toggle="modal" data-bs-target="#modalTriagem{{ $episodio->id }}">
@@ -168,9 +170,11 @@
                                                 </button>
                                             @endcan
                                         @else
-                                            <button type="button" class="btn btn-sm btn-soft-primary" data-bs-toggle="modal" data-bs-target="#modalVerTriagem{{ $episodio->id }}">
-                                                <i class="ri-file-list-3-line me-1"></i>Dados da Triagem
-                                            </button>
+                                            @can('pacientes.triagem')
+                                                <button type="button" class="btn btn-sm btn-soft-primary" data-bs-toggle="modal" data-bs-target="#modalVerTriagem{{ $episodio->id }}">
+                                                    <i class="ri-file-list-3-line me-1"></i>Dados da Triagem
+                                                </button>
+                                            @endcan
                                         @endif
                                     </div>
                                 </td>
@@ -293,7 +297,7 @@
                                             <div class="modal-footer bg-light">
                                                 <button type="button" class="btn btn-link link-danger" data-bs-dismiss="modal">Cancelar</button>
                                                 <button type="submit" class="btn btn-success btn-label shadow-sm">
-                                                    <i class="ri-check-double-line label-icon align-middle fs-16 me-2"></i> Concluir e Encaminhar
+                                                    <i class="ri-check-double-line align-bottom me-1"></i> Concluir e Encaminhar
                                                 </button>
                                             </div>
                                         </form>

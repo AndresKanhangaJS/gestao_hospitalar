@@ -56,7 +56,9 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header border-0 bg-white d-flex align-items-center">
                 <h5 class="card-title mb-0 flex-grow-1 fw-bold text-primary">Próximos Pacientes (Hoje)</h5>
-                <a href="{{ route('episodios.index') }}" class="btn btn-sm btn-soft-secondary">Ver Todo Histórico</a>
+                @can('episodios.listar')
+                <a href="{{ route('episodios.index') }}" class="btn btn-sm btn-soft-secondary">Listar Histórico de Atendimentos</a>
+                @endcan
             </div>
             <div class="card-body">
                 <div class="table-responsive">

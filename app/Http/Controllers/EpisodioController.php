@@ -74,7 +74,11 @@ class EpisodioController extends Controller
 
     public function create(Paciente $paciente)
     {
-        $medicos = Medico::where('status', 'activo')->get();
+        $medicos = Medico::where('status', 'activo')
+        ->whereHas('user.roles', function($query) {
+            $query->where('name', 'Médico');
+        })
+        ->get();
         $tipos = TipoAtendimento::where('status', 'activo')->get();
 
         return view('episodios.registar', compact('paciente', 'medicos', 'tipos'));
