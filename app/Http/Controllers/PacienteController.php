@@ -44,12 +44,20 @@ class PacienteController extends Controller
             $query->whereBetween('created_at', [$request->data_inicio . " 00:00:00", $request->data_fim . " 23:59:59"]);
         }
 
-        // 5. Filtro Por Seguradora
-        if ($request->filled('seguradora_id')) {
-            $query->where('seguradora_id', $request->seguradora_id);
+        // 5. Filtro Por Seguradora ou Particular
+        if ($request->has('seguradora_id') && $request->seguradora_id !== null) {
+            if ($request->seguradora_id === 'particular') {
+                // Filtra onde não há seguradora vinculada
+                $query->whereNull('seguradora_id');
+            } else {
+                // Filtra pela ID da seguradora selecionada
+                $query->where('seguradora_id', $request->seguradora_id);
+            }
         }
 
-        $pacientes = $query->latest()->paginate(12)->withQueryString();
+        $pacientes = $query->orderBy('nome_completo', 'asc')
+                       ->paginate(12)
+                       ->withQueryString();
 
         $seguradoras = Seguradora::all();
 
@@ -186,7 +194,7 @@ class PacienteController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls',
+            'file' => 'required|mimes:xlsx,xls,csv',
             'seguradora_id' => 'required_if:tipo_importacao,segurado'
         ]);
 
@@ -195,10 +203,14 @@ class PacienteController extends Controller
 
             Excel::import(new PacientesImport($seguradora_id), $request->file('file'));
 
-            return back()->with('success', 'Importação concluída! Os pacientes foram registados no sistema.');
+            return back()->with('success', 'Importação concluída!');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            return back()->with('error', 'Erro nas linhas do Excel. Verifique os dados.');
+            $failures = $e->failures(); // Captura os erros detalhados
+
+            // Retorna para a página anterior com os erros específicos
+            return back()->with('import_errors', $failures);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro crítico: ' . $e->getMessage());
         }
     }
 

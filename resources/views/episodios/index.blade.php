@@ -84,6 +84,7 @@
                                 <th scope="col" class="ps-4">Paciente</th>
                                 <th scope="col">Data/Hora</th>
                                 <th scope="col">Tipo Atendimento</th>
+                                <th scope="col">Prioridade</th>
                                 <th scope="col">Médico / Estado</th>
                                 <th scope="col">Status</th>
                                 <th scope="col" class="text-center">Acções</th>
@@ -96,7 +97,7 @@
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0 me-2">
                                             <div class="avatar-xs">
-                                                <span class="avatar-title rounded-circle bg-soft-info text-info fw-bold">
+                                                <span class="avatar-title rounded-circle bg-soft-primary fw-bold">
                                                     {{ substr($episodio->paciente->nome_completo, 0, 1) }}
                                                 </span>
                                             </div>
@@ -117,6 +118,24 @@
                                     <span class="badge bg-light text-primary border border-primary-subtle px-3 py-1">
                                         {{ $episodio->tipoAtendimento->nome ?? $episodio->tipo }}
                                     </span>
+                                </td>
+                                <td>
+                                    @if($episodio->prioridade)
+                                        @php
+                                            $corBadge = [
+                                                'Emergente' => 'bg-danger',
+                                                'Muito Urgente' => 'bg-warning text-dark',
+                                                'Urgente' => 'bg-warning text-dark',
+                                                'Pouco Urgente' => 'bg-success',
+                                                'Não Urgente' => 'bg-info',
+                                            ][$episodio->prioridade] ?? 'bg-secondary';
+                                        @endphp
+                                        <span class="badge {{ $corBadge }} shadow-sm">
+                                            <i class="ri-checkbox-blank-circle-fill me-1 fs-10"></i> {{ $episodio->prioridade }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted small italic">Não classificado</span>
+                                    @endif
                                 </td>
                                 <td class="align-middle">
                                     <div class="d-flex flex-column gap-1">
@@ -145,7 +164,7 @@
 
                                             @if($episodio->profissionalTriagem)
                                                 <small class="text-muted border-start ps-2">
-                                                    Triado por: <span class="fw-medium">{{ explode(' ', $episodio->profissionalTriagem->name)[0] }}</span>
+                                                    Triado por: <span class="fw-medium">{{ $episodio->profissionalTriagem->name ?? ''}}</span>
                                                 </small>
                                             @endif
                                         </div>
@@ -164,7 +183,7 @@
                                         </a>
                                         @endcan
                                         @if($episodio->situacao == 'Aguardando Triagem')
-                                            @can('pacientes.triagem')
+                                            @can('pacientes.fazer_triagem')
                                                 <button type="button" class="btn btn-sm btn-soft-success" data-bs-toggle="modal" data-bs-target="#modalTriagem{{ $episodio->id }}">
                                                     <i class="ri-heart-pulse-line me-1"></i>Fazer Triagem
                                                 </button>
@@ -297,7 +316,10 @@
                                             <div class="modal-footer bg-light">
                                                 <button type="button" class="btn btn-link link-danger" data-bs-dismiss="modal">Cancelar</button>
                                                 <button type="submit" class="btn btn-success btn-label shadow-sm">
-                                                    <i class="ri-check-double-line align-bottom me-1"></i> Concluir e Encaminhar
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="ri-check-double-line label-icon align-middle fs-16 me-2"></i>
+                                                        <span>Concluir e Encaminhar</span>
+                                                    </div>
                                                 </button>
                                             </div>
                                         </form>
@@ -317,7 +339,27 @@
                                         <div class="modal-body p-4">
                                             <div class="text-center mb-4">
                                                 <h5 class="fw-bold mb-1">{{ $episodio->paciente->nome_completo }}</h5>
-                                                <span class="badge bg-primary-subtle text-primary rounded-pill">Resumo da Triagem</span>
+
+                                                <div class="mt-2">
+                                                    @php
+                                                        $corPrioridade = [
+                                                            'Emergente' => 'bg-danger',
+                                                            'Muito Urgente' => 'bg-warning text-dark',
+                                                            'Urgente' => 'bg-warning text-dark',
+                                                            'Pouco Urgente' => 'bg-success',
+                                                            'Não Urgente' => 'bg-info',
+                                                        ][$episodio->prioridade] ?? 'bg-secondary';
+
+                                                        $iconPrioridade = ($episodio->prioridade == 'Emergente') ? 'ri-alarm-warning-fill' : 'ri-checkbox-blank-circle-fill';
+                                                    @endphp
+                                                    <span class="badge {{ $corPrioridade }} p-2 fs-12 shadow-sm">
+                                                        <i class="{{ $iconPrioridade }} me-1"></i> PRIORIDADE: {{ strtoupper($episodio->prioridade) }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="mt-2">
+                                                    <span class="badge bg-primary-subtle text-primary rounded-pill">Resumo da Triagem</span>
+                                                </div>
                                             </div>
 
                                             <div class="row g-4 text-center mb-4">
@@ -363,14 +405,14 @@
                                             <div class="p-3 bg-light rounded-3 mb-4">
                                                 <small class="text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Observações</small>
                                                 <p class="mb-0 text-dark small" style="line-height: 1.4;">
-                                                    {{ $episodio->observacoes_triagem ?? 'Sem observações registadas.' }}
+                                                    {{ $episodio->observacoes_triagem }}
                                                 </p>
                                             </div>
 
                                             <div class="d-flex justify-content-between align-items-end border-top pt-3">
                                                 <div>
                                                     <small class="text-muted d-block small">Responsável:</small>
-                                                    <span class="fw-medium">{{ $episodio->profissionalTriagem->name ?? 'Sistema' }}</span>
+                                                    <span class="fw-medium">{{ $episodio->profissionalTriagem->name ?? '' }}</span>
                                                 </div>
                                                 <div class="text-end">
                                                     <small class="text-muted d-block small">Data de Triagem:</small>
@@ -390,7 +432,7 @@
 
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <lord-icon src="https://cdn.lordicon.com/vlynuwvu.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:75px;height:75px"></lord-icon>
                                     <h5 class="mt-2 text-muted">Nenhum episódio encontrado.</h5>
                                 </td>
@@ -415,21 +457,33 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Captura o submit de qualquer form de triagem dentro da tabela
     $('.form-triagem').on('submit', function(e) {
         e.preventDefault();
 
         const form = $(this);
         const btnSubmit = form.find('button[type="submit"]');
-        const modal = form.closest('.modal'); // Referência ao modal aberto
+        const modal = form.closest('.modal');
         const formData = new FormData(this);
 
-        // Limpar erros anteriores
-        form.find('.form-control, .form-select').removeClass('is-invalid');
-        form.find('.text-danger.small, .invalid-feedback').remove();
+        // 1. Salva o conteúdo original para restaurar depois
+        const originalContent = btnSubmit.html();
 
-        // Feedback visual
-        btnSubmit.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> A processar...');
+        // 2. Limpeza de erros prévios
+        form.find('.is-invalid').removeClass('is-invalid');
+        form.find('.invalid-feedback').remove();
+
+        // 3. ATIVAÇÃO DO SPINNER (Solução definitiva)
+        // Travamos a largura do botão para ele não "encolher" ao mudar o texto
+        btnSubmit.css('width', btnSubmit.outerWidth());
+        btnSubmit.prop('disabled', true);
+
+        // Injetamos um HTML limpo com o spinner do Bootstrap
+        btnSubmit.html(`
+            <span class="d-flex align-items-center justify-content-center">
+                <span class="spinner-border spinner-border-sm flex-shrink-0 me-2" role="status"></span>
+                <span>A processar...</span>
+            </span>
+        `);
 
         $.ajax({
             url: form.attr('action'),
@@ -439,40 +493,38 @@ $(document).ready(function() {
             contentType: false,
             dataType: 'json',
             success: function(response) {
-                // Fechar o modal
                 modal.modal('hide');
-
                 Swal.fire({
                     icon: 'success',
                     title: 'Triagem Concluída!',
                     text: response.message,
                     confirmButtonColor: '#0ab39c',
                 }).then(() => {
-                    // Recarregar a página para atualizar a tabela e o status
                     window.location.reload();
                 });
             },
             error: function(xhr) {
-                btnSubmit.prop('disabled', false).html('<i class="ri-check-double-line label-icon align-middle fs-16 me-2"></i> Concluir e Encaminhar');
+                // 4. RESTAURA O BOTÃO EM CASO DE ERRO
+                btnSubmit.prop('disabled', false).html(originalContent).css('width', 'auto');
 
                 if (xhr.status === 422) {
                     const errors = xhr.responseJSON.errors;
                     Object.keys(errors).forEach(key => {
                         const input = form.find(`[name="${key}"]`);
                         input.addClass('is-invalid');
+                        const errorMessage = `<div class="invalid-feedback d-block">${errors[key][0]}</div>`;
 
-                        // Posicionamento inteligente do erro
-                        if (input.parent().hasClass('input-group')) {
-                            input.parent().after(`<div class="text-danger small mt-1">${errors[key][0]}</div>`);
+                        if (input.closest('.input-group').length > 0) {
+                            input.closest('.input-group').after(errorMessage);
                         } else {
-                            input.after(`<div class="invalid-feedback">${errors[key][0]}</div>`);
+                            input.after(errorMessage);
                         }
                     });
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Erro!',
-                        text: xhr.responseJSON.message || 'Ocorreu um erro ao salvar a triagem.'
+                        text: xhr.responseJSON.message || 'Ocorreu um erro ao salvar.'
                     });
                 }
             }
@@ -494,4 +546,13 @@ function updatePriorityColor(select) {
     }
 }
 </script>
+@endpush
+@push('styles')
+<style>
+.btn-label .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    vertical-align: middle;
+}
+</style>
 @endpush

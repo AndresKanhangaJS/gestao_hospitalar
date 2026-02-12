@@ -25,7 +25,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1 overflow-hidden">
-                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0"> Pacientes Ativos</p>
+                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0"> Pacientes Activos</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-end justify-content-between mt-4">
@@ -48,13 +48,13 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1 overflow-hidden">
-                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Assegurados</p>
+                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Convénios</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-end justify-content-between mt-4">
                     <div>
                         <h4 class="fs-22 fw-bold ff-secondary mb-4">{{ $stats['assegurados'] }}</h4>
-                        <span class="text-muted">Com convénio ativo</span>
+                        <span class="text-muted">Com convénio activo</span>
                     </div>
                     <div class="avatar-sm flex-shrink-0">
                         <span class="avatar-title bg-info-subtle rounded fs-3">
@@ -105,7 +105,7 @@
     <div class="col-xl-4">
         <div class="card shadow-sm border-0">
             <div class="card-header border-0 bg-white p-3">
-                <h4 class="card-title mb-0 fw-bold text-muted">Distribuição por Seguradora</h4>
+                <h4 class="card-title mb-0 fw-bold text-muted">Distribuição por Convénio</h4>
             </div>
             <div class="card-body">
                 <div id="insurance_chart" style="height: 250px;" class="mb-4"></div>

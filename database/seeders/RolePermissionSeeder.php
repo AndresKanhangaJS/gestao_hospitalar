@@ -87,6 +87,7 @@ class RolePermissionSeeder extends Seeder
                     'pacientes.listar',
                     'pacientes.accoes',
                     'pacientes.triagem',
+                    'pacientes.fazer_triagem',
                     'episodios.listar',
                 ])->get();
 
@@ -107,6 +108,7 @@ class RolePermissionSeeder extends Seeder
                     'pacientes.listar',
                     'pacientes.accoes',
                     'pacientes.detalhes',
+                    'pacientes.triagem',
                     'pacientes.informacoes_medicas',
                     'episodios.accoes',
                     'episodios.listar',

@@ -18,3 +18,9 @@ Route::prefix('receitas')->group(function () {
     Route::post('/store', [MedicoController::class, 'storeReceita'])->name('receitas.store');
     Route::get('/{id}/imprimir', [MedicoController::class, 'imprimirReceita'])->name('receitas.imprimir');
 });
+
+// Documentos Médicos
+Route::prefix('documentos')->group(function () {
+    Route::post('/store', [MedicoController::class, 'storeDocumento'])->name('documentos.store');
+    Route::get('/{id}/imprimir', [MedicoController::class, 'imprimirDocumento'])->name('documentos.imprimir');
+});

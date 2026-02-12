@@ -68,7 +68,7 @@
                                 <th>Paciente</th>
                                 <th>Prioridade</th> <th>Tipo</th>
                                 <th>Hora Entrada</th>
-                                <th>Status</th>
+                                <th>Estado</th>
                                 <th scope="col" class="text-center">Acções</th>
                             </tr>
                         </thead>
@@ -82,42 +82,67 @@
                                                 {{ substr($ep->paciente->nome_completo, 0, 1) }}
                                             </span>
                                         </div>
-                                        <span class="fw-bold">{{ $ep->paciente->nome_completo }}</span>
+                                        <div>
+                                            <h6 class="mb-0 fs-14 fw-bold text-dark">{{ $ep->paciente->nome_completo }}</h6>
+                                            <small class="text-muted">{{ $ep->paciente->numero_documento }}</small>
+                                        </div>
                                     </div>
                                 </td>
 
                                 <td>
                                     @php
-                                        $corPrioridade = [
-                                            'Emergente'      => 'danger',  // Vermelho
-                                            'Muito Urgente'  => 'warning', // Laranja
-                                            'Urgente'        => 'info',    // Amarelo (ou custom)
-                                            'Pouco Urgente'  => 'success', // Verde
-                                            'Não Urgente'    => 'primary'  // Azul
-                                        ];
-                                        $classe = $corPrioridade[$ep->prioridade] ?? 'secondary';
+                                        $corBadge = [
+                                            'Emergente' => 'bg-danger',
+                                            'Muito Urgente' => 'bg-warning text-dark',
+                                            'Urgente' => 'bg-warning text-dark',
+                                            'Pouco Urgente' => 'bg-success',
+                                            'Não Urgente' => 'bg-info',
+                                        ][$ep->prioridade] ?? 'bg-secondary';
                                     @endphp
-                                    <span class="badge bg-{{ $classe }} text-uppercase">
-                                        <i class="ri-checkbox-blank-circle-fill me-1 small"></i>{{ $ep->prioridade }}
+                                    <span class="badge {{ $corBadge }} shadow-sm">
+                                        <i class="ri-checkbox-blank-circle-fill me-1 fs-10"></i> {{ $ep->prioridade }}
                                     </span>
                                 </td>
 
-                                <td><span class="badge bg-soft-info text-info">{{ $ep->tipoAtendimento->nome }}</span></td>
-                                <td>{{ $ep->created_at->format('H:i') }}</td>
-                                <td><span class="badge bg-success">Aguardando</span></td>
                                 <td>
-                                    <div class="hstack gap-2 justify-content-center">
-                                        <a href="{{ route('episodios.show', $ep) }}" class="btn btn-primary btn-sm shadow-sm">
-                                            <i class="ri-external-link-line me-1"></i> Abrir Ficha
-                                        </a>
+                                    <span class="badge bg-light text-primary border border-primary-subtle px-3 py-1">
+                                        {{ $ep->tipoAtendimento->nome ?? $ep->tipo }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium text-dark">{{ $ep->created_at->format('d/m/Y') }}</span>
+                                        <small class="text-muted"><i class="ri-time-line me-1 fs-11"></i>{{ $ep->created_at->format('H:i') }}</small>
+                                        <small class="text-muted fs-11">Entrada</small>
                                     </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge {{ $ep->situacao == 'Aguardando Triagem' ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success' }} border border-{{ $ep->situacao == 'Aguardando Triagem' ? 'warning' : 'success' }}-subtle px-2">
+                                            @if($ep->situacao == 'Aguardando Triagem')
+                                                <i class="ri-loader-2-line ri-spin me-1"></i>
+                                            @endif
+                                            {{ $ep->situacao }}
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td class="text-center">
+                                    <a href="{{ route('episodios.show', $ep) }}" class="btn btn-primary btn-sm btn-label waves-effect waves-light shadow-sm">
+                                        <div class="d-flex align-items-center">
+                                            <i class="ri-external-link-line label-icon align-middle fs-16 me-2"></i>
+                                            <span>Abrir Ficha</span>
+                                        </div>
+                                    </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
                                 <td colspan="6" class="text-center py-4 text-muted">
-                                    <i class="ri-inbox-line fs-24 d-block mb-2"></i>
-                                    Sem pacientes em espera para hoje.
+                                    <lord-icon src="https://cdn.lordicon.com/vlynuwvu.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:50px;height:50px"></lord-icon>
+                                    <p class="mt-2">Sem pacientes em espera para hoje.</p>
                                 </td>
                             </tr>
                             @endforelse

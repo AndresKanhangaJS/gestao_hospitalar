@@ -91,4 +91,9 @@ class Episodio extends Model
     {
         return $this->hasMany(RequisicaoExame::class, 'episodio_id');
     }
+
+    public function documentosMedicos()
+    {
+        return $this->hasMany(DocumentoMedico::class, 'episodio_id');
+    }
 }

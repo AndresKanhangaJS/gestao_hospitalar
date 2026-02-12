@@ -67,6 +67,12 @@
                         <div class="col-xxl-2 col-sm-4">
                             <select class="form-select bg-white border-light" name="seguradora_id">
                                 <option value="">Seguradora (Todas)</option>
+
+                                {{-- Opção explícita para quem tem seguradora_id como NULL --}}
+                                <option value="particular" {{ request('seguradora_id') === 'particular' ? 'selected' : '' }}>
+                                    Particulares (Sem Seguro)
+                                </option>
+
                                 @foreach($seguradoras as $seg)
                                     <option value="{{ $seg->id }}" {{ request('seguradora_id') == $seg->id ? 'selected' : '' }}>
                                         {{ $seg->nome }}
@@ -95,7 +101,7 @@
                                 <th scope="col" class="ps-4">Paciente</th>
                                 <th scope="col">Documentação</th>
                                 <th scope="col">Contacto</th>
-                                <th scope="col">Perfil</th>
+                                <th scope="col">Perfil (Idade/Género)</th>
                                 <th scope="col">Convénio / Seguro</th>
                                 <th scope="col">Status</th>
                                 <th scope="col" class="text-center">Acções</th>
@@ -127,7 +133,13 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="text-dark">{{ \Carbon\Carbon::parse($paciente->data_nascimento)->age }} anos</span>
+                                    <span class="text-dark">
+                                        @if($paciente->data_nascimento)
+                                            {{ \Carbon\Carbon::parse($paciente->data_nascimento)->age }} Anos
+                                        @else
+                                            <span class="text-warning">Não informado</span>
+                                        @endif
+                                    </span>
                                     <span class="text-muted fs-11 ms-1">({{ $paciente->genero }})</span>
                                 </td>
                                 <td>
@@ -252,6 +264,23 @@
                 <h5 class="modal-title"><i class="ri-upload-cloud-2-line me-1"></i> Importar Pacientes</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            @if(session()->has('import_errors'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h5 class="text-danger fw-bold"><i class="ri-error-warning-line me-2"></i> Erros na Importação:</h5>
+                    <ul class="mb-0" style="max-height: 200px; overflow-y: auto;">
+                        @foreach(session()->get('import_errors') as $validation)
+                            <li>
+                                <strong>Linha {{ $validation->row() }}:</strong>
+                                @foreach($validation->errors() as $e)
+                                    {{ $e }}
+                                @endforeach
+                                (Valor: <em>{{ $validation->values()[$validation->attribute()] ?? 'N/A' }}</em>)
+                            </li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
             <form action="{{ route('pacientes.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
                 @csrf
                 <div class="modal-body p-4">

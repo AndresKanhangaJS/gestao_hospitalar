@@ -64,7 +64,20 @@ class EpisodioController extends Controller
             $q->where('situacao', $situacao);
         });
 
-        $episodios = $query->latest()->paginate(15)->withQueryString();
+        // ORDENAÇÃO: Prioridade Clínica primeiro, depois Ordem de Chegada
+        $episodios = $query->orderByRaw("
+            CASE
+                WHEN prioridade = 'Emergente' THEN 1
+                WHEN prioridade = 'Muito Urgente' THEN 2
+                WHEN prioridade = 'Urgente' THEN 3
+                WHEN prioridade = 'Pouco Urgente' THEN 4
+                WHEN prioridade = 'Não Urgente' THEN 5
+                ELSE 6
+            END ASC
+        ")
+        ->orderBy('created_at', 'asc') // Garante que o primeiro a chegar seja o primeiro daquela prioridade
+        ->paginate(12)
+        ->withQueryString();
 
         $medicos = Medico::where('status', 'activo')->orderBy('nome_completo')->get();
         $tiposAtendimento = TipoAtendimento::where('status', 'activo')->orderBy('nome')->get();
@@ -226,7 +239,6 @@ class EpisodioController extends Controller
                 'altura'              => 'nullable|numeric',
                 'frequencia_cardiaca' => 'nullable|integer',
                 'saturacao'           => 'nullable|integer',
-                //'medico_id'           => 'required|exists:medicos,id',
                 'observacoes_triagem' => 'nullable|string',
                 'prioridade'          => 'required|string',
             ], [
@@ -277,7 +289,16 @@ class EpisodioController extends Controller
 
     public function show(Episodio $episodio)
     {
-        $episodio->load(['paciente', 'medico', 'profissionalTriagem', 'criador', 'usuarioFechamento' ,'notasClinicas.criador']);
+        $episodio->load([
+            'paciente',
+            'medico',
+            'profissionalTriagem',
+            'criador',
+            'usuarioFechamento',
+            'notasClinicas.criador',
+            'documentosMedicos'
+        ]);
+
         $categoriasExames = ExameCategoria::with(['exames' => function($q) {
             $q->where('status', 'activo')->orderBy('nome');
         }])->get();

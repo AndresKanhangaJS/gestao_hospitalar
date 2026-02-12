@@ -26,7 +26,7 @@ class DashboardController extends Controller
             return view('dashboard.paciente', $this->getPacienteData($user));
         }
 
-        // Se for Admin / Recepção (Dashboard Geral)
+        // Dashboard Geral (Admin, Recepção, Enfermeiro, Laboratório ...)
         $stats = [
             'total'        => Paciente::count(),
             'ativos'       => Paciente::where('status', 'activo')->count(),
@@ -61,18 +61,20 @@ class DashboardController extends Controller
 
         return [
             'stats' => [
-                // Conta pacientes únicos atendidos por este médico
                 'meus_pacientes' => Episodio::where('medico_id', $medico->id)->distinct('paciente_id')->count(),
-                'atendimentos_abertos' => Episodio::where('medico_id', $medico->id)->where('situacao', 'Aberto')->count(),
+                'atendimentos_abertos' => Episodio::where('medico_id', $medico->id)->where('situacao', 'Aguardando Atendimento')->count(),
                 'notas_hoje' => NotaClinica::whereHas('episodio', function($q) use ($medico) {
                     $q->where('medico_id', $medico->id);
                 })->whereDate('created_at', now())->count(),
             ],
             'agenda_hoje' => Episodio::with(['paciente:id,nome_completo,numero_documento', 'tipoAtendimento:id,nome'])
                 ->where('medico_id', $medico->id)
-                ->where('situacao', 'Aberto')
-                ->whereDate('created_at', now()) // Apenas atendimentos de hoje
-                ->latest()
+                ->where('situacao', 'Aguardando Atendimento')
+                ->whereDate('created_at', now())
+                // 1. Ordena pela prioridade (Emergente > Muito Urgente > Urgente...)
+                ->orderByRaw("FIELD(prioridade, 'Emergente', 'Muito Urgente', 'Urgente', 'Pouco Urgente', 'Não Urgente') ASC")
+                // 2. Em caso de mesma prioridade, o mais antigo (quem chegou primeiro) aparece antes, ou latest() se preferir os novos
+                ->orderBy('created_at', 'asc')
                 ->get()
         ];
     }

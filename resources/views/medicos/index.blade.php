@@ -107,7 +107,7 @@
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0 me-2">
                                             <div class="avatar-xs">
-                                                <span class="avatar-title rounded-circle bg-soft-info text-info fw-bold">
+                                                <span class="avatar-title rounded-circle bg-soft-primary fw-bold">
                                                     {{ substr($medico->nome_completo, 0, 1) }}
                                                 </span>
                                             </div>

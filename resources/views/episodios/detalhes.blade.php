@@ -34,6 +34,19 @@
                 </a>
 
                 @if($podeEditar)
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary btn-label shadow-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="ri-file-paper-2-line label-icon align-middle fs-16 me-2"></i> Documentos
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="abrirModalDocumento('Atestado Médico')">Atestado Médico</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="abrirModalDocumento('Guia de Transferência')">Guia de Transferência</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="abrirModalDocumento('Solicitação de Especialidade')">Consulta de Especialidade</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="abrirModalDocumento('Relatório Médico')">Relatório Médico</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="abrirModalDocumento('Documento Livre')">Outros Documentos</a></li>
+                        </ul>
+                    </div>
                     <button type="button" class="btn btn-primary btn-label shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRequisitarExame">
                         <i class="ri-flask-line label-icon align-middle fs-16 me-2"></i> Requisitar Exames
                     </button>
@@ -80,7 +93,11 @@
                 <div class="row justify-content-center text-center">
                     <div class="col-6 border-end">
                         <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Idade Atual</p>
-                        <h6 class="mb-0 fw-bold text-dark">{{ $episodio->paciente->data_nascimento->age }} Anos</h6>
+                        @if($episodio->paciente->data_nascimento)
+                            <h6 class="mb-0 fw-bold text-dark">{{ $episodio->paciente->data_nascimento->age }} Anos</h6>
+                        @else
+                            <span class="text-warning">Não informado</span>
+                        @endif
                     </div>
                     @can('pacientes.informacoes_medicas')
                     <div class="col-6">
@@ -445,6 +462,60 @@
                 </div>
             </div>
         </div>
+
+        {{-- Card de Documentos Médicos Emitidos (Atestados, Relatórios, etc) --}}
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-header bg-light d-flex align-items-center py-2 px-3">
+                <h6 class="card-title mb-0 flex-grow-1 fw-bold text-dark">
+                    <i class="ri-file-list-3-line me-2 text-primary"></i>Documentos Médicos neste Episódio
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="fs-12">
+                                <th>Tipo de Documento</th>
+                                <th>Título / Descrição</th>
+                                <th>Data de Emissão</th>
+                                <th class="text-end">Acções</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($episodio->documentosMedicos->sortByDesc('created_at') as $doc)
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary text-uppercase">
+                                        {{ $doc->tipo }}
+                                    </span>
+                                </td>
+                                <td class="fw-medium">{{ $doc->titulo }}</td>
+                                <td class="text-muted fs-12">{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                                <td class="text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-soft-secondary btn-sm" type="button" data-bs-toggle="dropdown">
+                                            <i class="ri-more-fill"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('documentos.imprimir', codificar($doc->id)) }}" target="_blank">
+                                                    <i class="ri-printer-line me-2 align-bottom text-muted"></i> Imprimir Documento
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-muted">Nenhum documento médico emitido.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -735,6 +806,47 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Documentos Médicos --}}
+<div class="modal fade" id="modalDocumento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary py-3">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="ri-file-paper-2-line me-2"></i>
+                    <span id="doc-modal-title">Documento Médico</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-documento-medico" action="{{ route('documentos.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="episodio_id" value="{{ $episodio->id }}">
+                <input type="hidden" name="paciente_id" value="{{ $episodio->paciente_id }}">
+                <input type="hidden" name="tipo" id="doc-tipo-input">
+
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Título do Documento</label>
+                        <input type="text" name="titulo" id="doc-titulo-input" class="form-control" placeholder="Ex: Atestado de Comparecimento, Relatório de Alta...">
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-bold">Conteúdo do Documento</label>
+                        <div id="editor-container" style="height: 300px;"></div>
+                        <input type="hidden" name="conteudo" id="quill-html">
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-ghost-danger" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary btn-label shadow-sm">
+                        <i class="ri-printer-line label-icon align-middle fs-16 me-2"></i> Gerar e Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endif
 
 @endsection
@@ -902,6 +1014,132 @@ $(document).ready(function() {
         enviarAjax($(this), "{{ route('requisicoes_exames.store') }}", "A requisição foi enviada ao laboratório!");
     });
 });
+
+// REGISTAR DOCUMENTO MÉDICO (Atestado, Relatório, etc)
+$('#form-documento-medico').on('submit', function(e) {
+    e.preventDefault();
+
+    // 1. Sincronizar Quill antes do envio
+    if (quill) {
+        $('#quill-html').val(quill.root.innerHTML);
+    }
+
+    // Validação básica se o editor está vazio
+    const conteudoHtml = $('#quill-html').val();
+    if (conteudoHtml === '<p><br></p>' || !conteudoHtml) {
+        Swal.fire({ icon: 'warning', title: 'Atenção', text: 'O conteúdo do documento não pode estar vazio!' });
+        return;
+    }
+
+    const btn = $(this).find('button[type="submit"]');
+    const oldHtml = btn.html();
+
+    // Feedback de carregamento
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Processando...');
+
+    $.ajax({
+        url: "{{ route('documentos.store') }}",
+        method: 'POST',
+        data: new FormData(this),
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            $('#modalDocumento').modal('hide');
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: res.message,
+                showCancelButton: true,
+                confirmButtonText: '<i class="ri-printer-line me-1"></i> Imprimir Documento',
+                cancelButtonText: 'Fechar',
+                confirmButtonColor: '#405189', // Cor primária do seu sistema
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Rota de impressão (deve ser criada no web.php)
+                    window.open(`/documentos/${res.id_doc}/imprimir`, '_blank');
+                }
+                location.reload();
+            });
+        },
+        error: function(xhr) {
+            btn.prop('disabled', false).html(oldHtml);
+
+            if (xhr.status === 422) {
+                let erros = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                Swal.fire({ icon: 'error', title: 'Dados Inválidos', html: erros });
+            } else {
+                let erroMsg = xhr.responseJSON?.message || 'Falha ao salvar documento.';
+                Swal.fire({ icon: 'error', title: 'Erro!', text: erroMsg });
+            }
+        }
+    });
+});
+</script>
+
+<script>
+    let quill;
+
+    function abrirModalDocumento(tipo) {
+        $('#doc-modal-title').text(tipo);
+        $('#doc-tipo-input').val(tipo);
+        $('#doc-titulo-input').val(tipo);
+
+        var modalElement = document.getElementById('modalDocumento');
+        var modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        modal.show();
+
+        modalElement.addEventListener('shown.bs.modal', function () {
+            if (!quill) {
+                quill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, false] }],
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+
+            let template = "";
+            const pacienteNome = "{{ $episodio->paciente->nome_completo }}";
+            const pacienteDoc = "{{ $episodio->paciente->numero_documento }}";
+            const dataHoje = "{{ date('d/m/Y') }}";
+
+            if (tipo === 'Atestado Médico') {
+                template = `<p>Atesto para os devidos fins que o(a) Sr(a) <strong>${pacienteNome}</strong>, portador(a) do documento nº ${pacienteDoc}, foi atendido(a) nesta unidade no período das ____:____ às ____:____ e deve permanecer em repouso por ____ dias por motivos de saúde.</p>
+                            <p><br></p>
+                            <p class="ql-align-right">${dataHoje}.</p>`;
+            } else if (tipo === 'Guia de Transferência') {
+                template = `<p>Solicito a transferência do paciente <strong>${pacienteNome}</strong>, portador do documento nº ${pacienteDoc}, para a unidade ________________________ devido a ________________________.</p>
+                            <p><br></p>
+                            <p class="ql-align-right">${dataHoje}.</p>`;
+            } else if (tipo === 'Relatório Médico') {
+                template = `<p><strong>RELATÓRIO MÉDICO</strong></p>
+                            <p>O paciente <strong>${pacienteNome}</strong> apresenta quadro clínico de ________________________.</p>
+                            <p><br></p>
+                            <p class="ql-align-right">${dataHoje}.</p>`;
+            } else {
+                template = `<p>Inicie a redação do documento aqui...</p>
+                            <p><br></p>
+                            <p class="ql-align-right">${dataHoje}.</p>`;
+            }
+
+            quill.root.innerHTML = template;
+        }, { once: true });
+    }
+
+    $(document).ready(function() {
+        $('#form-documento-medico').on('submit', function() {
+            if (quill) {
+                $('#quill-html').val(quill.root.innerHTML);
+            }
+        });
+    });
 </script>
 @endpush
 

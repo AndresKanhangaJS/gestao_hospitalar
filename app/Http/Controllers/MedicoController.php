@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Medico;
+use App\Models\DocumentoMedico;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
@@ -310,5 +312,70 @@ class MedicoController extends Controller
 
         // Define o papel para A4 e a orientação
         return $pdf->setPaper('a5', 'portrait')->stream("receita-{$receita->codigo_receita}.pdf");
+    }
+
+   public function storeDocumento(Request $request): JsonResponse
+    {
+        try {
+            $validado = $request->validate([
+                'episodio_id' => 'required|exists:episodios,id',
+                'paciente_id' => 'required|exists:pacientes,id',
+                'tipo'        => 'required|string|max:100',
+                'titulo'      => 'nullable|string|max:255',
+                'conteudo'    => 'required|string', // O HTML do Quill
+            ]);
+
+            return DB::transaction(function () use ($validado) {
+                // 1. Obter o médico logado (vinculado ao user)
+                $user = auth()->user();
+                $medico = Medico::where('user_id', $user->id)->firstOrFail();
+
+                // 2. Criar o documento médico
+                $documento = DocumentoMedico::create([
+                    'episodio_id' => $validado['episodio_id'],
+                    'paciente_id' => $validado['paciente_id'],
+                    'medico_id'   => $medico->id,
+                    'origem'      => 'interna',
+                    'tipo'        => $validado['tipo'],
+                    'titulo'      => $validado['titulo'] ?? $validado['tipo'],
+                    'conteudo'    => $validado['conteudo'],
+                    'status'      => 'activo'
+                ]);
+
+                return response()->json([
+                    'success'    => true,
+                    'message'    => "{$validado['tipo']} gerado com sucesso!",
+                    'id_doc'     => codificar($documento->id), // Usando sua função de codificação
+                    'tipo_doc'   => $documento->tipo
+                ], 201);
+            });
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao salvar documento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function imprimirDocumento($id)
+    {
+        // Carrega o documento com as relações para o cabeçalho e rodapé
+        $documento = DocumentoMedico::with(['medico', 'paciente', 'episodio'])
+            ->findOrFail(decodificar($id));
+
+        $data = [
+            'documento' => $documento,
+            'paciente'  => $documento->paciente,
+            'medico'    => $documento->medico,
+            'data'      => $documento->created_at->format('d/m/Y H:i')
+        ];
+
+        $pdf = Pdf::loadView('docs.pdf.documento_medico_pdf', $data);
+
+        $nomeArquivo = Str::slug($documento->tipo . '-' . $documento->paciente->nome_completo);
+        return $pdf->setPaper('a4', 'portrait')->stream("{$nomeArquivo}.pdf");
     }
 }

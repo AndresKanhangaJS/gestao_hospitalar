@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('pacientes', function (Blueprint $table) {
             $table->id();
             $table->string('nome_completo');
-            $table->date('data_nascimento');
+            $table->date('data_nascimento')->nullable();
             $table->string('genero');
 
-            $table->string('tipo_documento');
-            $table->string('numero_documento', 30);
+            $table->string('tipo_documento')->nullable();
+            $table->string('numero_documento', 30)->nullable();
 
             $table->string('telefone', 20)->nullable();
             $table->string('email')->nullable();

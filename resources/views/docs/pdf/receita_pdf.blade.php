@@ -137,7 +137,7 @@
         </div>
 
         <div class="emissao-eletronica">
-            Emitida eletronicamente pelo sistema
+            Emitido eletronicamente pelo sistema
         </div>
     </div>
 

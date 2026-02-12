@@ -51,8 +51,14 @@
             <div class="card-footer py-3 bg-light-subtle border-top-0">
                 <div class="row justify-content-center text-center">
                     <div class="col-6 border-end">
-                        <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Idade Atual</p>
-                        <h6 class="mb-0 fw-bold text-dark">{{ $paciente->data_nascimento->age }} Anos</h6>
+                        <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Idade Actual</p>
+                        <h6 class="mb-0 fw-bold text-dark">
+                            @if($paciente->data_nascimento)
+                                {{ $paciente->data_nascimento->age }} Anos
+                            @else
+                                <span class="text-warning">Não informado</span>
+                            @endif
+                        </h6>
                     </div>
                     @can('pacientes.informacoes_medicas')
                     <div class="col-6">
@@ -197,7 +203,11 @@
                                     </div>
                                     <div>
                                         <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">Nascimento (Idade)</p>
-                                        <h6 class="fs-14 mb-0 text-dark fw-bold">{{ $paciente->data_nascimento->format('d/m/Y') }} ({{ $paciente->data_nascimento->age }} anos)</h6>
+                                        @if($paciente->data_nascimento)
+                                            {{ $paciente->data_nascimento->format('d/m/Y') }} ({{ $paciente->data_nascimento->age }} anos)
+                                        @else
+                                            <span class="text-warning">Não informado</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
