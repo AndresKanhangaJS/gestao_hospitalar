@@ -13,7 +13,8 @@ class RequisicaoExame extends Model
         'status',
         'prioridade',
         'observacoes_clinicas',
-        'data_solicitacao'
+        'data_solicitacao',
+        'data_resultado',
     ];
 
     // Uma requisição tem vários itens (exames específicos)

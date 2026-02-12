@@ -20,6 +20,10 @@ class DashboardController extends Controller
         if ($user->hasRole('Médico')) {
             return view('dashboard.medico', $this->getMedicoData($user));
         }
+        // Laboratorista
+        if ($user->hasRole('Laboratorista')) {
+            return view('dashboard.laboratorio', $this->getLaboratorioData());
+        }
 
         // Se for Paciente
         if ($user->hasRole('Paciente')) {
@@ -74,6 +78,23 @@ class DashboardController extends Controller
                 // 1. Ordena pela prioridade (Emergente > Muito Urgente > Urgente...)
                 ->orderByRaw("FIELD(prioridade, 'Emergente', 'Muito Urgente', 'Urgente', 'Pouco Urgente', 'Não Urgente') ASC")
                 // 2. Em caso de mesma prioridade, o mais antigo (quem chegou primeiro) aparece antes, ou latest() se preferir os novos
+                ->orderBy('created_at', 'asc')
+                ->get()
+        ];
+    }
+
+    private function getLaboratorioData()
+    {
+        return [
+            'stats' => [
+                'requisicoes_pendentes' => \App\Models\RequisicaoExame::where('status', 'pendente')->count(),
+                'em_processamento'     => \App\Models\RequisicaoExame::whereIn('status', ['em_coleta', 'laboratorio'])->count(),
+                'concluidos_hoje'      => \App\Models\RequisicaoExame::where('status', 'concluido')
+                                            ->whereDate('updated_at', now())->count(),
+            ],
+            'fila_trabalho' => \App\Models\RequisicaoExame::with(['episodio.paciente', 'medico'])
+                ->whereIn('status', ['pendente', 'em_coleta', 'laboratorio'])
+                ->orderByRaw("FIELD(prioridade, 'urgente', 'normal') ASC")
                 ->orderBy('created_at', 'asc')
                 ->get()
         ];

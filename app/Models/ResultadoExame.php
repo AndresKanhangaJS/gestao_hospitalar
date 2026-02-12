@@ -13,7 +13,10 @@ class ResultadoExame extends Model
         'exame_item_id',
         'valor_resultado',
         'tecnico_id',
-        'data_resultado'
+        'data_resultado',
+        'arquivo_anexo',
+        'observacoes_laboratorio',
+        'status',
     ];
 
     // O item da requisição ao qual este resultado pertence
