@@ -99,9 +99,9 @@
         </div>
     </div>
 
-    <div class="emissao-footer">
+    {{-- <div class="emissao-footer">
         Emitida eletronicamente pelo sistema
-    </div>
+    </div> --}}
 
 </body>
 </html>

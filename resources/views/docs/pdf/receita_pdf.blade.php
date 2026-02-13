@@ -136,9 +136,9 @@
             <div class="medico-crm">Nº de Ordem: {{ $medico->numero_ordem ?? '__________' }}</div>
         </div>
 
-        <div class="emissao-eletronica">
+        {{-- <div class="emissao-eletronica">
             Emitido eletronicamente pelo sistema
-        </div>
+        </div> --}}
     </div>
 
 </body>

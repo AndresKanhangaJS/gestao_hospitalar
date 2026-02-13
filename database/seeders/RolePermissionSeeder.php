@@ -117,5 +117,20 @@ class RolePermissionSeeder extends Seeder
 
                 $medicoRole->syncPermissions($medicoPermissions);
             }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 7. Laboratorista -> Permissões
+        |--------------------------------------------------------------------------
+        */
+        $labRole = Role::where('name', 'Laboratorista')->first();
+
+            if ($labRole) {
+                $labPermissions = Permission::whereIn('name', [
+                    'laboratorio.menu',
+                ])->get();
+
+                $labRole->syncPermissions($labPermissions);
+            }
     }
 }

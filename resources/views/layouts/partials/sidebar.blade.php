@@ -145,6 +145,22 @@
                     </div>
                 </li>
                 @endcan
+                @can('laboratorio.menu')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarGestLab" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarGestLab">
+                        <i class="ri-flask-line"></i> <span data-key="t-lab">Laboratório</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarGestLab">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('laboratorio.index') }}" class="nav-link">
+                                    Laboratório
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endcan
             </ul>
         </div>
         <!-- Sidebar -->

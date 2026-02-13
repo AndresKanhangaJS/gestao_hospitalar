@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasHashId;
 
 class RequisicaoExame extends Model
 {
+    use HasHashId;
+
     protected $fillable = [
         'codigo_requisicao',
         'episodio_id',
@@ -29,6 +32,7 @@ class RequisicaoExame extends Model
 
     // Médico que realizou a solicitação
     public function medico() {
-        return $this->belongsTo(User::class, 'medico_id');
+        //return $this->belongsTo(User::class, 'medico_id');
+        return $this->belongsTo(Medico::class, 'medico_id');
     }
 }

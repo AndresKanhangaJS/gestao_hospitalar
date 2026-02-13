@@ -11,4 +11,5 @@ Route::prefix('exames')->group(function () {
 Route::get('/laboratorio', [LaboratorioController::class, 'index'])->name('laboratorio.index');
 Route::get('/laboratorio/lancar/{id}', [LaboratorioController::class, 'lancarResultados'])->name('laboratorio.lancar');
 Route::post('/laboratorio/guardar', [LaboratorioController::class, 'storeResultados'])->name('laboratorio.guardar');
+Route::get('laboratorio/{id}/imprimir', [LaboratorioController::class, 'imprimirResultadosExames'])->name('laboratorio.imprimir');
 

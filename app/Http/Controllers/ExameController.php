@@ -7,6 +7,7 @@ use App\Models\RequisicaoExame;
 use App\Models\RequisicaoItem;
 use App\Models\ExameItem;
 use App\Models\ResultadoExame;
+use App\Models\Medico;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -24,11 +25,19 @@ class ExameController extends Controller
 
         DB::beginTransaction();
         try {
+            // 1. Busca o médico cujo user_id é o ID do usuário logado
+            $medico = Medico::where('user_id', auth()->id())->first();
+
+            // 2.
+            if (!$medico) {
+                return redirect()->back()->with('error', 'Apenas usuários registrados como médicos podem solicitar exames.');
+            }
+
             // 1. Criar o cabeçalho
             $requisicao = RequisicaoExame::create([
                 'codigo_requisicao' => 'REQ-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
                 'episodio_id' => $request->episodio_id,
-                'medico_id' => auth()->id(),
+                'medico_id' => $medico->id,
                 'prioridade' => $request->prioridade,
                 'observacoes_clinicas' => $request->observacoes_clinicas,
                 'status' => 'pendente',
@@ -68,7 +77,7 @@ class ExameController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao salvar: ' . $e->getMessage()
+                'message' => 'Erro ao guardar: ' . $e->getMessage()
             ], 500);
         }
     }

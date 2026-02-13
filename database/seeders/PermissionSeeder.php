@@ -87,6 +87,8 @@ class PermissionSeeder extends Seeder
             "convenios.eliminar",
             //
             "gestao_configuracoes.menu",
+            //
+            "laboratorio.menu"
         ];
 
         foreach($permissions as $key => $value){

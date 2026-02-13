@@ -345,29 +345,31 @@
                 </h6>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
+                <div class="table-responsive pb-5">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr class="fs-12">
-                                <th>Código</th>
+                        <thead class="table-light text-muted">
+                            <tr class="fs-12 text-uppercase">
+                                <th class="ps-3">Código e Data</th>
                                 <th>Prioridade</th>
                                 <th>Status</th>
                                 <th>Exames Selecionados</th>
-                                <th class="text-end">Acções</th>
+                                <th class="text-end pe-3">Acções</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($episodio->requisicoesExames->sortByDesc('created_at') as $requisicao)
                             <tr>
-                                <td>
-                                    <span class="fw-bold text-dark">{{ $requisicao->codigo_requisicao }}</span>
-                                    <div class="text-muted fs-11">{{ $requisicao->created_at->format('d/m/Y H:i') }}</div>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark">#{{ $requisicao->codigo_requisicao }}</div>
+                                    <div class="text-muted fs-11">
+                                        <i class="ri-calendar-line"></i> {{ $requisicao->created_at->format('d/m/Y H:i') }}
+                                    </div>
                                 </td>
                                 <td>
                                     @if($requisicao->prioridade == 'urgente')
-                                        <span class="badge bg-danger">URGENTE (STAT)</span>
+                                        <span class="badge bg-danger-subtle text-danger">🔴 URGENTE</span>
                                     @else
-                                        <span class="badge bg-info">Rotina</span>
+                                        <span class="badge bg-info-subtle text-info">ROTINA</span>
                                     @endif
                                 </td>
                                 <td>
@@ -387,29 +389,52 @@
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
                                         @foreach($requisicao->itens as $item)
-                                            <span class="badge border border-light-subtle text-muted fw-normal">
+                                            <span class="badge border border-light-subtle text-muted fw-normal bg-white">
                                                 {{ $item->exame->nome }}
                                             </span>
                                         @endforeach
                                     </div>
                                 </td>
-                                <td class="text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown">
-                                            <i class="ri-more-fill"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#"><i class="ri-printer-line me-2 align-bottom text-muted"></i> Imprimir Guia</a></li>
-                                            @if($requisicao->status == 'concluido')
-                                                <li><a class="dropdown-item" href="#"><i class="ri-file-list-3-line me-2 align-bottom text-muted"></i> Ver Resultados</a></li>
-                                            @endif
-                                        </ul>
+                                <td class="text-end pe-3">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href=""
+                                        target="_blank"
+                                        class="btn btn-soft-primary btn-sm"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Imprimir Guia">
+                                            <i class="ri-printer-line align-middle"></i>
+                                        </a>
+
+                                        @if($requisicao->status == 'concluido')
+                                            <a href="{{ route('laboratorio.imprimir', codificar($requisicao->id)) }}"
+                                            target="_blank"
+                                            class="btn btn-soft-success btn-sm"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Ver Resultados">
+                                                <i class="ri-file-list-3-line align-middle"></i>
+                                            </a>
+                                        @endif
+
+                                        @if($requisicao->status == 'pendente')
+                                            <button type="button"
+                                                    class="btn btn-soft-danger btn-sm"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    title="Cancelar Requisição">
+                                                <i class="ri-delete-bin-line align-middle"></i>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-3 text-muted">Nenhuma requisição de exame enviada.</td>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="ri-information-line fs-20"></i><br>
+                                    Nenhuma requisição de exame enviada para este episódio.
+                                </td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -428,33 +453,45 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr class="fs-12">
-                                <th>Código</th>
+                        <thead class="table-light text-muted">
+                            <tr class="fs-12 text-uppercase">
+                                <th class="ps-3">Código</th>
                                 <th>Data/Hora</th>
-                                <th>Medicamentos</th>
-                                <th class="text-end">Acções</th>
+                                <th>Conteúdo</th>
+                                <th class="text-end pe-3">Acções</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($episodio->receitas->sortByDesc('created_at') as $receita)
                             <tr>
-                                <td class="fw-bold text-primary">{{ $receita->codigo_receita }}</td>
-                                <td>{{ $receita->created_at->format('d/m/Y H:i') }}</td>
+                                <td class="ps-3">
+                                    <span class="fw-bold text-dark">{{ $receita->codigo_receita }}</span>
+                                </td>
                                 <td>
-                                    <span class="badge bg-info-subtle text-info">
-                                        {{ $receita->itens->count() }} item(ns)
+                                    <div class="text-muted fs-11">
+                                        <i class="ri-calendar-line"></i> {{ $receita->created_at->format('d/m/Y') }}
+                                        <br>
+                                        <i class="ri-time-line"></i> {{ $receita->created_at->format('H:i') }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info-subtle text-info px-2">
+                                        <i class="ri-capsule-line me-1"></i>{{ $receita->itens->count() }} Medicamento(s)
                                     </span>
                                 </td>
-                                <td class="text-end">
-                                    <a href="{{ route('receitas.imprimir', codificar($receita->id)) }}" target="_blank" class="btn btn-sm btn-soft-dark">
-                                        <i class="ri-printer-line me-1"></i> Imprimir
+                                <td class="text-end pe-3">
+                                    <a href="{{ route('receitas.imprimir', codificar($receita->id)) }}"
+                                    target="_blank"
+                                    class="btn btn-sm btn-soft-dark"
+                                    data-bs-toggle="tooltip"
+                                    title="Imprimir Receita">
+                                        <i class="ri-printer-line"></i>
                                     </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="text-center py-3 text-muted">Nenhuma receita emitida.</td>
+                                <td colspan="4" class="text-center py-4 text-muted">Nenhuma receita emitida.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -473,42 +510,41 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr class="fs-12">
-                                <th>Tipo de Documento</th>
+                        <thead class="table-light text-muted">
+                            <tr class="fs-12 text-uppercase">
+                                <th class="ps-3">Tipo de Documento</th>
                                 <th>Título / Descrição</th>
-                                <th>Data de Emissão</th>
-                                <th class="text-end">Acções</th>
+                                <th>Emissão</th>
+                                <th class="text-end pe-3">Acções</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($episodio->documentosMedicos->sortByDesc('created_at') as $doc)
                             <tr>
-                                <td>
-                                    <span class="badge bg-primary-subtle text-primary text-uppercase">
-                                        {{ $doc->tipo }}
+                                <td class="ps-3">
+                                    <span class="badge bg-primary-subtle text-primary px-2 text-uppercase">
+                                        <i class="ri-file-text-line me-1"></i>{{ $doc->tipo }}
                                     </span>
                                 </td>
-                                <td class="fw-medium">{{ $doc->titulo }}</td>
-                                <td class="text-muted fs-12">{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-soft-secondary btn-sm" type="button" data-bs-toggle="dropdown">
-                                            <i class="ri-more-fill"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('documentos.imprimir', codificar($doc->id)) }}" target="_blank">
-                                                    <i class="ri-printer-line me-2 align-bottom text-muted"></i> Imprimir Documento
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                <td>
+                                    <div class="fw-medium text-dark">{{ $doc->titulo }}</div>
+                                </td>
+                                <td class="text-muted fs-11">
+                                    {{ $doc->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a href="{{ route('documentos.imprimir', codificar($doc->id)) }}"
+                                    target="_blank"
+                                    class="btn btn-sm btn-soft-primary"
+                                    data-bs-toggle="tooltip"
+                                    title="Imprimir Documento">
+                                        <i class="ri-printer-line"></i>
+                                    </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="text-center py-3 text-muted">Nenhum documento médico emitido.</td>
+                                <td colspan="4" class="text-center py-4 text-muted">Nenhum documento médico emitido.</td>
                             </tr>
                             @endforelse
                         </tbody>
