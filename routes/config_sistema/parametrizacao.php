@@ -3,6 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TipoAtendimentoController;
 use App\Http\Controllers\SeguradoraController;
+use App\Http\Controllers\EmpresaController;
+
+// EMPRESAS
+Route::prefix('empresas')->group(function () {
+    Route::get('/', [EmpresaController::class, 'index'])->name('empresas.index');
+    Route::post('/registrar', [EmpresaController::class, 'store'])->name('empresas.store');
+    Route::post('/{id}/atualizar', [EmpresaController::class, 'update'])->name('empresas.update');
+});
 
 // Tipos de Atendimentos
 Route::get('/configuracoes/atendimentos', [TipoAtendimentoController::class, 'index'])->name('atendimentos.index');

@@ -88,7 +88,9 @@ class PermissionSeeder extends Seeder
             //
             "gestao_configuracoes.menu",
             //
-            "laboratorio.menu"
+            "laboratorio.menu",
+            //
+            "gestao_empresas.menu"
         ];
 
         foreach($permissions as $key => $value){

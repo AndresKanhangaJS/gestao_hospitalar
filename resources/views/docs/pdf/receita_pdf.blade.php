@@ -62,9 +62,13 @@
     <div class="header">
         <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-                <td width="70%" class="clinic-name">CLÍNICA ISPAJ</td>
+                <td width="70%" class="clinic-name">{{ $empresa->nome ?? 'Clínica Hospitalar' }}</td>
                 <td width="30%" class="logo-placeholder">
-                    (LOGO)
+                    @if($empresa && $empresa->logo)
+                        <img src="{{ public_path('storage/logos_empresas/' . $empresa->logo) }}" alt="Logo" style="max-height: 50px;">
+                    @else
+                        {{ 'LOGO' }}
+                    @endif
                 </td>
             </tr>
         </table>

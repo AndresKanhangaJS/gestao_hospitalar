@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UpdateMedicoRequest;
 use App\Models\Receita;
 use App\Models\ReceitaItem;
+use App\Models\Empresa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Spatie\Permission\Models\Role;
 
@@ -297,6 +298,8 @@ class MedicoController extends Controller
 
     public function imprimirReceita($id)
     {
+        $empresa = Empresa::where('status', 'activo')->first();
+
         // Carrega a receita com todas as relações necessárias
         $receita = Receita::with(['itens', 'medico', 'episodio.paciente'])->findOrFail(decodificar($id));
 
@@ -305,7 +308,8 @@ class MedicoController extends Controller
             'receita' => $receita,
             'paciente' => $receita->episodio->paciente,
             'medico' => $receita->medico,
-            'data' => $receita->created_at->format('d/m/Y H:i')
+            'data' => $receita->created_at->format('d/m/Y H:i'),
+            'empresa' => $empresa
         ];
 
         $pdf = Pdf::loadView('docs.pdf.receita_pdf', $data);
