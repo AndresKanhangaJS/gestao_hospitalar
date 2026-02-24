@@ -70,9 +70,9 @@
                     </button>
 
                     <div class="dropdown-menu dropdown-menu-end">
-                        {{-- <a class="dropdown-item" href="#"><i class="mdi mdi-account-circle text-muted fs-16 me-1"></i> Perfil</a>
+                        <a class="dropdown-item" href="{{ route('perfil') }}"><i class="mdi mdi-account-circle text-muted fs-16 me-1"></i> Perfil</a>
 
-                        <div class="dropdown-divider"></div> --}}
+                        <div class="dropdown-divider"></div>
 
                         <form action="{{ route('logout') }}" method="POST" id="logout-form">
                             @csrf

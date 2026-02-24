@@ -8,6 +8,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -129,6 +130,76 @@ class UserController extends Controller
                 'message' => 'Erro ao eliminar usuário.'
             ], 500);
         }
+    }
+
+    public function perfil(User $user)
+    {
+        $user->load('roles');
+
+        return view('auth.perfil', compact('user'));
+    }
+
+    public function updatePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'current_password' => ['required', 'current_password'],
+                'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(5)],
+            ], [
+                'current_password.current_password' => 'A senha atual está incorreta.',
+                'password.confirmed' => 'A confirmação da nova senha não coincide.',
+                'password.required' => 'A nova senha é obrigatória.'
+            ]);
+
+            $user = auth()->user();
+            $user->update([
+                'password' => Hash::make($request->password),
+                'must_change_password' => false,
+                'password_changed_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sua senha foi alterada com sucesso!'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar senha: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showChangePasswordForm()
+    {
+        return view('auth.force_change_password');
+    }
+
+    public function forceUpdatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(5)],
+        ]);
+
+        $user = Auth::user();
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'must_change_password' => false, // Libera o acesso
+            'password_changed_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Senha atualizada com sucesso!'
+        ]);
     }
 
 }

@@ -27,6 +27,8 @@ class User extends Authenticatable
         'user_id_atualizacao',
         'user_id_delete',
         'motivo_exclusao',
+        'password_changed_at',
+        'must_change_password',
         'status',
     ];
 

@@ -24,11 +24,16 @@
      <!-- Begin page -->
     <div id="layout-wrapper">
 
-        <!-- Topbar -->
-        @include('layouts.partials.topbar')
+        @if(!auth()->user()->must_change_password)
 
-        <!-- Sidebar -->
-        @include('layouts.partials.sidebar')
+            <!-- Topbar -->
+            @include('layouts.partials.topbar')
+
+            <!-- Sidebar -->
+            @include('layouts.partials.sidebar')
+
+        @endif
+
         <div class="vertical-overlay"></div>
 
         <!-- Main Content -->
@@ -39,8 +44,10 @@
                 </div>
             </div>
 
-            <!-- Footer -->
-            @include('layouts.partials.footer')
+            @if(!auth()->user()->must_change_password)
+                <!-- Footer -->
+                @include('layouts.partials.footer')
+            @endif
         </div>
     </div>
 

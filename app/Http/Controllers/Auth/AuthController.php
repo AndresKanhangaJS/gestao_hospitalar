@@ -23,7 +23,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validação padrão
+        // 1. Validação (Mantida exatamente como a sua)
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
@@ -33,7 +33,6 @@ class AuthController extends Controller
             'password.required' => 'O campo senha é obrigatório.',
         ]);
 
-        // Se falhar → retorna JSON com 422
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'validation_error',
@@ -41,7 +40,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Tenta login
+        // 2. Tentativa de Login
         if (!Auth::attempt($validator->validated(), $request->boolean('remember'))) {
             return response()->json([
                 'status' => 'error',
@@ -49,9 +48,22 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Login OK → regenera sessão
+        // 3. Login OK -> Regenera sessão
         $request->session()->regenerate();
 
+        // 4. DEFINIÇÃO DA VARIÁVEL $user (O que faltava!)
+        $user = Auth::user();
+
+        // 5. Verificação de Mudança de Senha
+        if ($user->must_change_password) {
+            return response()->json([
+                'status' => 'force_password_change',
+                'message' => 'Primeiro acesso detectado. É necessário alterar a senha.',
+                'redirect' => route('password.force_change'),
+            ], 200);
+        }
+
+        // 6. Sucesso Total
         return response()->json([
             'status' => 'success',
             'redirect' => route('dashboard'),

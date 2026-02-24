@@ -3,33 +3,42 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 
 // Route::get('/', function () {
 //     return view('welcome');
 // });
 
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-});
+Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+
+// Route::middleware('guest')->group(function () {
+//     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+//     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+// });
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/alterar-senha-obrigatoria', [UserController::class, 'showChangePasswordForm'])->name('password.force_change');
+    Route::post('/alterar-senha-obrigatoria', [UserController::class, 'forceUpdatePassword'])->name('password.force_update');
 
-    // ACL Users
-    require __DIR__.'/config_sistema/usuarios.php';
+    Route::middleware(['must.change.password'])->group(function () {
+        // Dashboard
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // ACL Routes
-    require __DIR__.'/config_sistema/acl.php';
+        // ACL Users
+        require __DIR__.'/config_sistema/usuarios.php';
 
-    // Configurações do Sistema
-    require __DIR__.'/config_sistema/parametrizacao.php';
+        // ACL Routes
+        require __DIR__.'/config_sistema/acl.php';
 
-    // Módulos do Sistema
-    require __DIR__.'/modulos/pacientes.php';
-    require __DIR__.'/modulos/medicos.php';
-    require __DIR__.'/modulos/exames.php';
+        // Configurações do Sistema
+        require __DIR__.'/config_sistema/parametrizacao.php';
+
+        // Módulos do Sistema
+        require __DIR__.'/modulos/pacientes.php';
+        require __DIR__.'/modulos/medicos.php';
+        require __DIR__.'/modulos/exames.php';
+    });
 });

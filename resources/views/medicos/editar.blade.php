@@ -79,7 +79,7 @@
                                 <label for="especialidade" class="form-label fw-semibold text-muted small">ESPECIALIDADE <span class="text-danger">*</span></label>
                                 {{-- <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" value="{{ $medico->especialidade }}"> --}}
                                 <select class="form-select border-light bg-light" name="especialidade_id" id="especialidade">
-                                    <option value="" disabled {{ !$medico->especialidade_id ? 'selected' : '' }}>Selecione especialidade...</option>
+                                    <option value="" disabled {{ !$medico->especialidade_id ? 'selected' : '' }}>Selecione a especialidade...</option>
                                     @foreach($especialidades as $especialidade)
                                         <option value="{{ $especialidade->id }}" {{ $medico->especialidade_id == $especialidade->id ? 'selected' : '' }}>{{ $especialidade->nome }}</option>
                                     @endforeach

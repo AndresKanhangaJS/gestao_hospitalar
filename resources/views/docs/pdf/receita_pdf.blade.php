@@ -88,7 +88,7 @@
                 </td>
                 <td width="100px" align="right">
                     <span class="label">Idade</span>
-                    <strong>{{ $paciente->data_nascimento->age }} anos</strong>
+                    <strong>{{ $paciente->data_nascimento->age ?? '--' }} anos</strong>
                 </td>
             </tr>
         </table>

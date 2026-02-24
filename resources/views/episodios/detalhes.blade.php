@@ -103,7 +103,7 @@
                     <div class="col-6">
                         <p class="text-muted mb-1 fs-11 text-uppercase fw-bold">G. Sanguíneo</p>
                         <h6 class="mb-0 fw-bold text-danger">
-                            <i class="ri-drop-fill me-1"></i>{{ $episodio->paciente->grupo_sanguineo ?? 'N/D' }}
+                            <i class="ri-drop-fill me-1"></i>{{ $episodio->paciente->grupo_sanguineo ?? 'Não informado' }}
                         </h6>
                     </div>
                     @endcan
