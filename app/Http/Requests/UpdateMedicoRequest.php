@@ -37,7 +37,7 @@ class UpdateMedicoRequest extends FormRequest
                 'string',
                 Rule::unique('medicos', 'numero_ordem')->ignore($medicoId)
             ],
-            'especialidade'    => [
+            'especialidade_id'    => [
                 'required_if:role,Médico',
                 'nullable',
                 'string',
@@ -68,7 +68,7 @@ class UpdateMedicoRequest extends FormRequest
             'nome_completo.required' => 'O nome completo é obrigatório.',
             'numero_ordem.required'  => 'O número de ordem (CRM) é obrigatório.',
             'numero_ordem.unique'    => 'Este número de ordem já está registado para outro médico.',
-            'especialidade.required' => 'A especialidade deve ser informada.',
+            'especialidade_id.required' => 'A especialidade deve ser informada.',
             'email.required'         => 'O e-mail é obrigatório.',
             'email.email'            => 'Insira um endereço de e-mail válido.',
             'email.unique'           => 'Este e-mail já está a ser utilizado por outro utilizador.',

@@ -26,6 +26,7 @@ class Medico extends Model
         'morada',
         'numero_ordem',
         'especialidade',
+        'especialidade_id',
         'user_id_criacao',
         'user_id_atualizacao',
         'status'
@@ -55,5 +56,10 @@ class Medico extends Model
     public function episodios()
     {
         return $this->hasMany(Episodio::class, 'medico_id');
+    }
+
+    public function especialidadeRelacao()
+    {
+        return $this->belongsTo(TipoAtendimento::class, 'especialidade_id');
     }
 }

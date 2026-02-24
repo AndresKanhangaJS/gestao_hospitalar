@@ -16,6 +16,7 @@ use App\Http\Requests\UpdateMedicoRequest;
 use App\Models\Receita;
 use App\Models\ReceitaItem;
 use App\Models\Empresa;
+use App\Models\TipoAtendimento;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Spatie\Permission\Models\Role;
 
@@ -70,7 +71,12 @@ class MedicoController extends Controller
         $roles = Role::whereNotIn('name', $rolesExcluidas)
                 ->orderBy('name', 'asc')
                 ->get();
-        return view('medicos.registar', compact('roles'));
+
+        $especialidades = TipoAtendimento::where('status', 'activo')
+                        ->where('especialidade', true)
+                        ->orderBy('nome')->get();
+
+        return view('medicos.registar', compact('roles', 'especialidades'));
     }
 
     public function store(Request $request): JsonResponse
@@ -83,7 +89,7 @@ class MedicoController extends Controller
                 // Condicional: numero_ordem é obrigatório para Médico, Enfermeiro e Laboratorista
                 'numero_ordem'     => 'required_if:role,Médico,Enfermeiro,Laboratorista|nullable|string|max:50|unique:medicos,numero_ordem',
                 // Condicional: especialidade é obrigatória apenas para Médico
-                'especialidade'    => 'required_if:role,Médico|nullable|string|max:255',
+                'especialidade_id'    => 'required_if:role,Médico|nullable|string|max:255',
                 'data_nascimento'  => 'nullable|date|before_or_equal:today',
                 'genero'           => 'required|in:Masculino,Feminino',
                 'tipo_documento'   => 'required|in:BI,Passaporte',
@@ -94,7 +100,7 @@ class MedicoController extends Controller
                 'email.unique' => 'Este e-mail já está associado a um usuário.',
                 'numero_ordem.unique' => 'Este número de ordem já está registado.',
                 'numero_ordem.required_if' => 'O número de ordem é obrigatório para este perfil.',
-                'especialidade.required_if' => 'A especialidade é obrigatória para médicos.',
+                'especialidade_id.required_if' => 'A especialidade_id é obrigatória para médicos.',
                 'required' => 'O campo :attribute é obrigatório.'
             ]);
 
@@ -142,7 +148,7 @@ class MedicoController extends Controller
     public function show(Medico $medico)
     {
         // Carregamos as relações e contamos quantos episódios este médico já realizou
-        $medico->load(['criador', 'atualizador', 'user.roles', 'episodios' => function($query) {
+        $medico->load(['criador', 'atualizador', 'user.roles', 'especialidadeRelacao', 'episodios' => function($query) {
             $query->with('paciente')->latest()->take(50);
         }])->loadCount('episodios');
 
@@ -151,7 +157,11 @@ class MedicoController extends Controller
 
     public function edit(Medico $medico)
     {
-        return view('medicos.editar', compact('medico'));
+        $especialidades = TipoAtendimento::where('status', 'activo')
+                        ->where('especialidade', true)
+                        ->orderBy('nome')->get();
+
+        return view('medicos.editar', compact('medico', 'especialidades'));
     }
 
     public function update(UpdateMedicoRequest $request, Medico $medico)
@@ -171,7 +181,7 @@ class MedicoController extends Controller
 
                 // 2. Lógica de campos por Cargo
                 if ($data['role'] !== 'Médico') {
-                    $data['especialidade'] = null;
+                    $data['especialidade_id'] = null;
                 }
                 if (!in_array($data['role'], ['Médico', 'Enfermeiro', 'Laboratorista'])) {
                     $data['numero_ordem'] = null;

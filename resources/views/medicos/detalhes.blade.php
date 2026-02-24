@@ -42,7 +42,7 @@
                 <span class="badge bg-secondary fs-11 align-middle ms-1">#{{ $medico->codigo_medico }}</span>
                 <p class="text-primary fw-medium mb-1">
                     @if ($isMedico)
-                        {{ $roleName }} | {{ $medico->especialidade }}
+                        {{ $roleName }} | {{ $medico->especialidadeRelacao->nome ?? $medico->especialidade }}
                     @else
                         {{ $roleName }}
                     @endif

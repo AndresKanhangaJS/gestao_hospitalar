@@ -13,7 +13,7 @@ class TipoAtendimento extends Model
     protected $table = 'tipos_atendimentos';
 
     protected $fillable = [
-        'nome', 'codigo', 'user_id_criacao', 'user_id_atualizacao', 'status'
+        'nome', 'codigo', 'user_id_criacao', 'user_id_atualizacao', 'especialidade', 'status'
     ];
 
     public function episodios(): HasMany

@@ -93,7 +93,13 @@
                             {{-- Div Especialidade: Visível apenas para Médicos --}}
                             <div class="col-lg-6" id="div_especialidade" style="display: none;">
                                 <label for="especialidade" class="form-label fw-semibold text-muted small">ESPECIALIDADE <span class="text-danger">*</span></label>
-                                <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" placeholder="Ex: Clínica Geral, Pediatria...">
+                                {{-- <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" placeholder="Ex: Clínica Geral, Pediatria..."> --}}
+                                <select class="form-select border-light bg-light" name="especialidade_id" id="especialidade" required>
+                                    <option value="" selected disabled>Selecione especialidade...</option>
+                                    @foreach($especialidades as $especialidade)
+                                        <option value="{{ $especialidade->id }}">{{ $especialidade->nome }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>

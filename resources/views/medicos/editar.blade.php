@@ -77,7 +77,13 @@
 
                             <div class="col-lg-6" id="div_especialidade" style="display: {{ $exibirEspecialidade ? 'block' : 'none' }};">
                                 <label for="especialidade" class="form-label fw-semibold text-muted small">ESPECIALIDADE <span class="text-danger">*</span></label>
-                                <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" value="{{ $medico->especialidade }}">
+                                {{-- <input type="text" id="especialidade" name="especialidade" class="form-control border-light bg-light" value="{{ $medico->especialidade }}"> --}}
+                                <select class="form-select border-light bg-light" name="especialidade_id" id="especialidade">
+                                    <option value="" disabled {{ !$medico->especialidade_id ? 'selected' : '' }}>Selecione especialidade...</option>
+                                    @foreach($especialidades as $especialidade)
+                                        <option value="{{ $especialidade->id }}" {{ $medico->especialidade_id == $especialidade->id ? 'selected' : '' }}>{{ $especialidade->nome }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
