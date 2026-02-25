@@ -14,18 +14,18 @@ class TiposAtendimentosSeeder extends Seeder
     public function run(): void
     {
         $tipos = [
-            ['nome' => 'Clínica Geral', 'codigo' => 'CG'],
-            ['nome' => 'Odontologia', 'codigo' => 'ODO'],
-            ['nome' => 'Pediatria', 'codigo' => 'PED'],
-            ['nome' => 'Ginecologia e Obstetrícia', 'codigo' => 'GO'],
-            ['nome' => 'Ortopedia', 'codigo' => 'ORT'],
-            ['nome' => 'Cardiologia', 'codigo' => 'CARD'],
-            ['nome' => 'Urgência / Emergência', 'codigo' => 'URG'],
-            ['nome' => 'Enfermagem (Curativos/Injeções)', 'codigo' => 'ENF'],
-            ['nome' => 'Oftalmologia', 'codigo' => 'OFT'],
-            ['nome' => 'Dermatologia', 'codigo' => 'DERM'],
-            ['nome' => 'Psicologia', 'codigo' => 'PSI'],
-            ['nome' => 'Fisioterapia', 'codigo' => 'FISIO'],
+            ['nome' => 'Clínica Geral', 'codigo' => 'CG', 'especialidade' => false],
+            ['nome' => 'Odontologia', 'codigo' => 'ODO', 'especialidade' => true],
+            ['nome' => 'Pediatria', 'codigo' => 'PED', 'especialidade' => true],
+            ['nome' => 'Ginecologia e Obstetrícia', 'codigo' => 'GO', 'especialidade' => true],
+            ['nome' => 'Ortopedia', 'codigo' => 'ORT', 'especialidade' => true],
+            ['nome' => 'Cardiologia', 'codigo' => 'CARD', 'especialidade' => true],
+            ['nome' => 'Urgência / Emergência', 'codigo' => 'URG', 'especialidade' => false],
+            ['nome' => 'Enfermagem (Curativos/Injeções)', 'codigo' => 'ENF', 'especialidade' => false],
+            ['nome' => 'Oftalmologia', 'codigo' => 'OFT', 'especialidade' => true],
+            ['nome' => 'Dermatologia', 'codigo' => 'DERM', 'especialidade' => true],
+            ['nome' => 'Psicologia', 'codigo' => 'PSI', 'especialidade' => true],
+            ['nome' => 'Fisioterapia', 'codigo' => 'FISIO', 'especialidade' => true],
         ];
 
         foreach ($tipos as $tipo) {
@@ -33,6 +33,7 @@ class TiposAtendimentosSeeder extends Seeder
                 ['codigo' => $tipo['codigo']],
                 [
                     'nome' => $tipo['nome'],
+                    'especialidade' => $tipo['especialidade'],
                     'user_id_criacao' => 1,
                     'status' => 'activo',
                     'created_at' => now(),

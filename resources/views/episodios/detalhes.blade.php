@@ -482,10 +482,10 @@
                                 <td class="text-end pe-3">
                                     <a href="{{ route('receitas.imprimir', codificar($receita->id)) }}"
                                     target="_blank"
-                                    class="btn btn-sm btn-soft-dark"
+                                    class="btn btn-soft-primary btn-sm"
                                     data-bs-toggle="tooltip"
                                     title="Imprimir Receita">
-                                        <i class="ri-printer-line"></i>
+                                        <i class="ri-printer-line align-middle"></i>
                                     </a>
                                 </td>
                             </tr>

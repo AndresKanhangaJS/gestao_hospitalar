@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\RequisicaoExame;
 use App\Models\ResultadoExame;
 use App\Models\RequisicaoItem;
+use App\Models\Empresa;
+use App\Models\Medico;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -133,18 +135,37 @@ class LaboratorioController extends Controller
 
     public function imprimirResultadosExames($id)
     {
+        $empresa = Empresa::where('status', 'activo')->first();
+
         $requisicao = RequisicaoExame::with([
             'episodio.paciente',
             'medico',
             'itens.exame',
-            'itens.resultados.exameItem'
+            'itens.resultados.exameItem',
+            'itens.resultados.tecnico'
         ])->findOrFail(decodificar($id));
+
+        // Pegar o técnico do primeiro item de resultado que existir
+        $tecnico = null;
+        foreach ($requisicao->itens as $item) {
+            if ($item->resultados->first() && $item->resultados->first()->tecnico) {
+                $tecnico = $item->resultados->first()->tecnico;
+                break; // Para no primeiro técnico encontrado
+            }
+        }
+
+
+        $prof_tecnico = Medico::where('user_id', $tecnico->id)
+                    ->select('id', 'nome_completo', 'numero_ordem')
+                    ->first();
 
         $data = [
             'requisicao' => $requisicao,
             'paciente'   => $requisicao->episodio->paciente,
             'medico'     => $requisicao->medico,
-            'data_emissao' => now()
+            'tecnico'    => $prof_tecnico,
+            'data_emissao' => now(),
+            'empresa'    => $empresa,
         ];
 
         $pdf = Pdf::loadView('docs.pdf.laudo_laboratorio_pdf', $data);

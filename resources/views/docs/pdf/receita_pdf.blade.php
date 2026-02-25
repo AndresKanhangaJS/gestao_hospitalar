@@ -75,7 +75,7 @@
     </div>
 
     <div class="receita-meta">
-        <strong>RECEITA #</strong>{{ $receita->codigo_receita }} |
+        <strong>#</strong>{{ $receita->codigo_receita }} |
         <strong>EMISSÃO:</strong> {{ $receita->created_at->format('d/m/Y H:i') }}
     </div>
 

@@ -32,22 +32,50 @@
         .obs-box { margin-top: 15px; padding: 10px; border: 1px solid #eee; font-style: italic; }
 
         /* Rodapé */
-        .footer { position: fixed; bottom: 30px; width: 100%; text-align: center; border-top: 1px solid #eee; pt-10px; }
+        /* Rodapé Centralizado */
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        .data-emissao { margin-bottom: 35px; font-size: 11px; text-transform: capitalize; }
+        .signature-line { width: 280px; margin: 0 auto; border-top: 1px solid #333; padding-top: 5px; }
+        .medico-info { font-size: 12px; font-weight: bold; }
+        .medico-crm { font-size: 10px; color: #555; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <table width="100%">
+        {{-- <table width="100%">
             <tr>
                 <td class="clinic-name">CLÍNICA ISPAJ - LABORATÓRIO</td>
                 <td align="right">REQ #{{ $requisicao->codigo_requisicao }}</td>
+            </tr>
+        </table> --}}
+        <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="70%" class="clinic-name">{{ $empresa->nome ?? 'Clínica Hospitalar' }}</td>
+                <td width="30%" class="logo-placeholder">
+                    @if($empresa && $empresa->logo)
+                        <img src="{{ public_path('storage/logos_empresas/' . $empresa->logo) }}" alt="Logo" style="max-height: 50px;">
+                    @else
+                        {{ 'LOGO' }}
+                    @endif
+                </td>
             </tr>
         </table>
     </div>
 
     <div class="doc-title">RELATÓRIO DE EXAMES LABORATORIAIS</div>
 
+    <table width="100%">
+        <tr>
+            <td class="clinic-name"></td>
+            <td align="right"> <strong>#</strong>{{ $requisicao->codigo_requisicao }}</td>
+        </tr>
+    </table>
     <div class="info-box">
         <table class="info-table">
             <tr>
@@ -57,7 +85,7 @@
                 </td>
                 <td width="20%">
                     <span class="label">Idade:</span><br>
-                    {{ $paciente->data_nascimento->age }} Anos
+                    {{ $paciente->data_nascimento->age ?? '--'}} Anos
                 </td>
                 <td width="20%">
                     <span class="label">Sexo:</span><br>
@@ -67,7 +95,7 @@
             <tr>
                 <td style="padding-top: 10px;">
                     <span class="label">Médico Solicitante:</span><br>
-                    {{ $medico->name }}
+                    <span style="font-size: 13px; font-weight: bold;">{{ $medico->nome_completo }}</span>
                 </td>
                 <td style="padding-top: 10px;">
                     <span class="label">Data Coleta:</span><br>
@@ -128,16 +156,41 @@
         </div>
     @endif
 
-    <div style="margin-top: 50px; text-align: center;">
+    {{-- <div style="margin-top: 50px; text-align: center;">
         <div style="width: 250px; border-top: 1px solid #333; margin: 0 auto;"></div>
         <p style="margin-top: 5px;">
             <strong>Responsável Técnico</strong><br>
-            {{-- <small>Liberação eletrônica via sistema</small> --}}
+            <small>Liberação eletrônica via sistema</small>
         </p>
     </div>
 
     <div class="footer">
         Gerado em {{ now()->format('d/m/Y H:i') }}
+    </div> --}}
+    <div class="footer">
+        <div class="data-emissao">
+            {{ date('d') }} de {{ \Carbon\Carbon::now()->locale('pt')->translatedFormat('F') }} de {{ date('Y') }}
+        </div>
+
+        <table width="100%" style="text-align: center;">
+            <tr>
+                <td width="50%">
+                    <div style="width: 200px; margin: 0 auto; border-top: 1px solid #333; padding-top: 5px;">
+                        <div class="medico-info">{{ $tecnico->nome_completo ?? 'Sistema' }}</div>
+                        <div class="medico-crm">Técnico Responsável</div>
+                        <div class="medico-crm">Nº Ordem: {{ $tecnico->numero_ordem ?? '---' }}</div>
+                    </div>
+                </td>
+
+                <td width="50%">
+                    <div style="width: 200px; margin: 0 auto; border-top: 1px solid #333; padding-top: 5px;">
+                        <div class="medico-info">{{ $medico->nome_completo }}</div>
+                        <div class="medico-crm">Médico Solicitante</div>
+                        <div class="medico-crm">Nº Ordem: {{ $medico->numero_ordem ?? '---' }}</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
 </body>

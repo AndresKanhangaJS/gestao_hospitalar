@@ -376,6 +376,8 @@ class MedicoController extends Controller
 
     public function imprimirDocumento($id)
     {
+        $empresa = Empresa::where('status', 'activo')->first();
+
         // Carrega o documento com as relações para o cabeçalho e rodapé
         $documento = DocumentoMedico::with(['medico', 'paciente', 'episodio'])
             ->findOrFail(decodificar($id));
@@ -384,7 +386,8 @@ class MedicoController extends Controller
             'documento' => $documento,
             'paciente'  => $documento->paciente,
             'medico'    => $documento->medico,
-            'data'      => $documento->created_at->format('d/m/Y H:i')
+            'data'      => $documento->created_at->format('d/m/Y H:i'),
+            'empresa'   => $empresa
         ];
 
         $pdf = Pdf::loadView('docs.pdf.documento_medico_pdf', $data);

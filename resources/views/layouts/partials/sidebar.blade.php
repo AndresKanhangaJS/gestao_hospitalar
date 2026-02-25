@@ -77,6 +77,16 @@
                                 <a href="{{ route('seguradoras.index') }}" class="nav-link" data-key="t-convenios"> Convénios </a>
                             </li>
                             @endcan
+                            @can('gestao_tipos_atendimentos.menu')
+                            <li class="nav-item">
+                                <a href="{{ route('tipos_atendimentos.index') }}" class="nav-link"> Tipos de Atendimentos/<br>Especialidades </a>
+                            </li>
+                            @endcan
+                            @can('gestao_exames.menu')
+                            <li class="nav-item">
+                                <a href="{{ route('exames.index') }}" class="nav-link"> Exames </a>
+                            </li>
+                            @endcan
                         </ul>
                     </div>
                 </li>
